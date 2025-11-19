@@ -685,7 +685,7 @@ def main():
     # optional arguments
     parser.add_argument(
         "--n-clusters",
-        default=20,
+        default=None,
         type=int,
         help="Number of clusters for K-means. Specify if you want to use a specific k, otherwise auto-selects k using elbow method with derivative.",
     )
@@ -706,6 +706,12 @@ def main():
         default=15,
         type=int,
         help="Minimum cluster size for HDBSCAN (default: 15)",
+    )
+    parser.add_argument(
+        "--dim-reduction-dims",
+        default=50,
+        type=int,
+        help="Number of dimensions for dimensionality reduction (default: 50)",
     )
 
     args = parser.parse_args()
