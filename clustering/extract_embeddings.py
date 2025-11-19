@@ -298,7 +298,7 @@ def main():
         data["encoder_embeddings"],
     )
     np.save(os.path.join(args.save_dir, "code_indices.npy"), data["code_indices"])
-    np.save(os.path.join(args.save_dir, "motions.npy"), data["motions"])
+    # np.save(os.path.join(args.save_dir, "motions.npy"), data["motions"])
     np.save(os.path.join(args.save_dir, "lengths.npy"), data["lengths"])
     with open(os.path.join(args.save_dir, "texts.txt"), "w") as f:
         f.write("\n".join(data["texts"]))
