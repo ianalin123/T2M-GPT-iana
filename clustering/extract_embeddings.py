@@ -52,43 +52,18 @@ def load_verb_labels_from_file(verb_file_path):
 
 
 
-def get_majority_verb(compound_verb):
-    """
-    Get the majority (most common) verb from a compound verb string.
-
-    Args:
-        compound_verb: String like "walk-run-jump" (alphabetically sorted verbs)
-
-    Returns:
-        Single most common verb, or first alphabetically if tie
-    """
-    if not compound_verb or compound_verb == "":
-        return ""
-
-    verbs = compound_verb.split("-")
-    if len(verbs) == 1:
-        return verbs[0]
-
-    # For compound verbs, return the first one (they're already sorted alphabetically)
-    # In future could use frequency analysis from training data
-    return verbs[0]
-
-
 def extract_verb_labels(names, verb_labels_dict):
     """
-    Extract compound and majority verb labels for samples using pre-extracted verb labels.
+    Extract compound verb labels for samples using pre-extracted verb labels.
 
     Args:
         names: List of sample names/IDs to map to verb labels
         verb_labels_dict: dict mapping file_id to compound verb string (from verbs.txt)
 
     Returns:
-        dict with:
-            - compound_verbs: list of compound verb strings (e.g., "walk-run")
-            - majority_verbs: list of single majority verbs
+        list of compound verb strings (e.g., "walk-run", "sit-stand")
     """
     compound_verbs = []
-    majority_verbs = []
 
     for name in names:
         # Remove any prefix (e.g., "A_" in "A_000021" -> "000021")
@@ -97,15 +72,9 @@ def extract_verb_labels(names, verb_labels_dict):
 
         # Get verb label from dictionary
         compound_verb = verb_labels_dict.get(base_name, "")
-        majority_verb = get_majority_verb(compound_verb)
-
         compound_verbs.append(compound_verb)
-        majority_verbs.append(majority_verb)
 
-    return {
-        "compound_verbs": compound_verbs,
-        "majority_verbs": majority_verbs,
-    }
+    return compound_verbs
 
 
 def extract_encoder_embeddings(net, motion_batch):
@@ -289,12 +258,12 @@ def save_embeddings_hdf5(data, save_path, split="train", verb_labels_dict=None):
     if verb_labels_dict is None:
         raise ValueError("verb_labels_dict is required. Please run extract_verbs.py first to generate verbs.txt")
 
-    # Map verb labels to samples using their IDs
+    # Map compound verb labels to samples using their IDs
     print("Mapping verb labels to samples...")
-    verb_labels = extract_verb_labels(data["names"], verb_labels_dict)
+    compound_verbs = extract_verb_labels(data["names"], verb_labels_dict)
 
     # Report statistics
-    non_empty_verbs = sum(1 for v in verb_labels["compound_verbs"] if v)
+    non_empty_verbs = sum(1 for v in compound_verbs if v)
     print(f"  Successfully mapped {non_empty_verbs}/{len(data['names'])} samples to verb labels")
     if non_empty_verbs < len(data["names"]):
         missing = len(data["names"]) - non_empty_verbs
@@ -311,9 +280,8 @@ def save_embeddings_hdf5(data, save_path, split="train", verb_labels_dict=None):
             # Create group for this sample using file ID as key
             sample_group = f.create_group(name)
 
-            # Add verb labels as attributes
-            sample_group.attrs["compound_verb"] = verb_labels["compound_verbs"][idx]
-            sample_group.attrs["majority_verb"] = verb_labels["majority_verbs"][idx]
+            # Add compound verb label as attribute
+            sample_group.attrs["compound_verb"] = compound_verbs[idx]
 
             # Add embeddings as datasets
             sample_group.create_dataset(

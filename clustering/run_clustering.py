@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from tqdm import tqdm
 
 # Ensure project root is on the path so we can import project modules if needed
 # Since we're now in clustering/, go up one level to get to project root
@@ -210,10 +211,11 @@ def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000,
     # Plot each cluster separately for legend
     for cluster_id in unique_labels:
         mask = labels_vis == cluster_id
-        cluster_label = f"Cluster {cluster_id}"
         if cluster_verb_labels and cluster_id in cluster_verb_labels:
             verb = cluster_verb_labels[cluster_id]
-            cluster_label = f"{cluster_id}: {verb}" if verb else f"{cluster_id}: (no verb)"
+            cluster_label = verb if verb else "(no verb)"
+        else:
+            cluster_label = f"Cluster {cluster_id}"
 
         ax.scatter(
             embeddings_pca[mask, 0],
@@ -272,10 +274,11 @@ def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000,
     unique_labels_tsne = np.unique(labels_tsne)
     for cluster_id in unique_labels_tsne:
         mask = labels_tsne == cluster_id
-        cluster_label = f"Cluster {cluster_id}"
         if cluster_verb_labels and cluster_id in cluster_verb_labels:
             verb = cluster_verb_labels[cluster_id]
-            cluster_label = f"{cluster_id}: {verb}" if verb else f"{cluster_id}: (no verb)"
+            cluster_label = verb if verb else "(no verb)"
+        else:
+            cluster_label = f"Cluster {cluster_id}"
 
         ax.scatter(
             embeddings_tsne[mask, 0],
@@ -349,7 +352,7 @@ def load_data_from_hdf5(hdf5_path):
             - code_indices: (N, T') numpy array
             - texts: list of text descriptions
             - names: list of sample IDs
-            - majority_verbs: list of majority verb labels (one per sample)
+            - compound_verbs: list of compound verb labels (e.g., "walk-run-sit")
     """
     print(f"Loading data from HDF5: {hdf5_path}")
 
@@ -357,7 +360,7 @@ def load_data_from_hdf5(hdf5_path):
     code_indices = []
     texts = []
     names = []
-    majority_verbs = []
+    compound_verbs = []
 
     with h5py.File(hdf5_path, "r") as f:
         for sample_id in f.keys():
@@ -367,56 +370,139 @@ def load_data_from_hdf5(hdf5_path):
             code_indices.append(sample_group["code_indices"][:])
             texts.append(sample_group.attrs["text"])
             names.append(sample_id)
-            majority_verbs.append(sample_group.attrs["majority_verb"])
+            compound_verbs.append(sample_group.attrs["compound_verb"])
 
     return {
         "encoder_embeddings": np.array(encoder_embeddings),
         "code_indices": np.array(code_indices),
         "texts": texts,
         "names": names,
-        "majority_verbs": majority_verbs,
+        "compound_verbs": compound_verbs,
     }
 
 
-def label_clusters_by_majority_verb(labels, majority_verbs):
+def label_clusters_by_majority_verb(labels, compound_verbs):
     """
-    Label each k-means cluster by the most frequent majority verb within it.
-    Uses the pre-computed majority_verb from HDF5 (one verb per sample).
+    Label each k-means cluster by the most frequent atomic verb within it.
+
+    For each cluster:
+    1. Collect all compound verb labels (e.g., "walk-run-sit")
+    2. Break them into atomic verbs
+    3. Find the most frequent atomic verb across all samples in that cluster
 
     Args:
         labels: (N,) k-means cluster assignments
-        majority_verbs: list of majority verb strings (one per sample)
+        compound_verbs: list of compound verb strings (e.g., ["walk-run", "sit", ...])
 
     Returns:
-        cluster_verb_labels: dict mapping cluster_id to most frequent majority verb
-        cluster_verb_counts: dict mapping cluster_id to Counter of majority verbs
+        cluster_verb_labels: dict mapping cluster_id to most frequent atomic verb
+        cluster_atomic_verb_counts: dict mapping cluster_id to Counter of atomic verbs
+        cluster_compound_verb_counts: dict mapping cluster_id to Counter of compound verbs
     """
-    if majority_verbs is None:
-        return None, None
+    if compound_verbs is None:
+        return None, None, None
 
     n_clusters = len(np.unique(labels))
-    cluster_verb_counts = defaultdict(Counter)
+    cluster_atomic_verb_counts = defaultdict(Counter)
+    cluster_compound_verb_counts = defaultdict(Counter)
 
-    # Count majority verbs for each cluster
+    # Count verbs for each cluster
     for i, cluster_id in enumerate(labels):
-        majority_verb = majority_verbs[i] if i < len(majority_verbs) else "unknown"
-        cluster_verb_counts[cluster_id][majority_verb] += 1
+        compound_verb = compound_verbs[i] if i < len(compound_verbs) else ""
 
-    # Find most frequent majority verb for each cluster
+        # Count the compound verb itself
+        cluster_compound_verb_counts[cluster_id][compound_verb] += 1
+
+        # Break into atomic verbs and count each one
+        if compound_verb:
+            atomic_verbs = compound_verb.split("-")
+            for verb in atomic_verbs:
+                cluster_atomic_verb_counts[cluster_id][verb] += 1
+
+    # Find most frequent atomic verb for each cluster
     cluster_verb_labels = {}
     for cluster_id in range(n_clusters):
-        verb_counts = cluster_verb_counts[cluster_id]
-        if verb_counts:
-            most_frequent_verb = verb_counts.most_common(1)[0][0]
+        atomic_counts = cluster_atomic_verb_counts[cluster_id]
+        if atomic_counts:
+            most_frequent_verb = atomic_counts.most_common(1)[0][0]
             cluster_verb_labels[cluster_id] = most_frequent_verb
         else:
             cluster_verb_labels[cluster_id] = "unknown"
 
-    return cluster_verb_labels, cluster_verb_counts
+    return cluster_verb_labels, cluster_atomic_verb_counts, cluster_compound_verb_counts
+
+
+def save_clustered_hdf5(data, labels, cluster_verb_labels, save_path):
+    """
+    Save clustered data to HDF5 file with cluster assignments and atomic verb labels.
+
+    Structure:
+        /[file_id]/
+            compound_verb (attribute) - original compound verb from verbs.txt
+            cluster_id (attribute) - k-means cluster assignment
+            cluster_label (attribute) - atomic verb label for this cluster
+            text (attribute)
+            length (attribute)
+            encoder_embeddings (dataset)
+            code_indices (dataset)
+
+    Args:
+        data: dict with encoder_embeddings, code_indices, texts, names, compound_verbs
+        labels: (N,) k-means cluster assignments
+        cluster_verb_labels: dict mapping cluster_id to atomic verb label
+        save_path: Path to save clustered HDF5 file
+    """
+    print(f"\nSaving clustered data to HDF5: {save_path}")
+
+    with h5py.File(save_path, "w") as f:
+        # Add metadata attributes at root level
+        f.attrs["n_samples"] = len(data["names"])
+        f.attrs["n_clusters"] = len(cluster_verb_labels)
+        f.attrs["embedding_dim"] = data["encoder_embeddings"].shape[-1]
+
+        # Store cluster labels as a root-level dataset
+        cluster_labels_ds = f.create_dataset("cluster_labels", data=labels)
+        cluster_labels_ds.attrs["description"] = "K-means cluster assignments for each sample"
+
+        # Store cluster verb labels mapping
+        for cluster_id, verb_label in cluster_verb_labels.items():
+            f.attrs[f"cluster_{cluster_id}_label"] = verb_label
+
+        # Create a group for each sample
+        for idx, name in enumerate(tqdm(data["names"], desc="Writing clustered HDF5")):
+            sample_group = f.create_group(name)
+
+            # Add original compound verb
+            sample_group.attrs["compound_verb"] = data["compound_verbs"][idx]
+
+            # Add cluster assignment and label
+            sample_group.attrs["cluster_id"] = int(labels[idx])
+            sample_group.attrs["cluster_label"] = cluster_verb_labels[labels[idx]]
+
+            # Add text and length
+            sample_group.attrs["text"] = data["texts"][idx]
+            sample_group.attrs["length"] = int(data["encoder_embeddings"][idx].shape[0])
+
+            # Add embeddings and codes
+            sample_group.create_dataset(
+                "encoder_embeddings",
+                data=data["encoder_embeddings"][idx],
+                compression="gzip",
+                compression_opts=4,
+            )
+            sample_group.create_dataset(
+                "code_indices",
+                data=data["code_indices"][idx],
+                compression="gzip",
+                compression_opts=4,
+            )
+
+    print(f"✓ Saved {len(data['names'])} samples with cluster assignments to {save_path}")
 
 
 def analyze_clusters(
-    labels, texts, code_indices, save_dir, top_k=10, majority_verbs=None
+    labels, texts, code_indices, save_dir, top_k=10, compound_verbs=None,
+    cluster_verb_labels=None, cluster_atomic_verb_counts=None, cluster_compound_verb_counts=None
 ):
     """Analyze what each K-means cluster represents."""
 
@@ -425,11 +511,6 @@ def analyze_clusters(
     print("=" * 80)
 
     n_clusters = len(np.unique(labels))
-
-    # Label clusters by majority verbs (from HDF5)
-    cluster_verb_labels, cluster_verb_counts = label_clusters_by_majority_verb(
-        labels, majority_verbs
-    )
 
     analysis_path = os.path.join(save_dir, "cluster_analysis.txt")
     analysis_file = open(analysis_path, "w")
@@ -483,13 +564,23 @@ def analyze_clusters(
             "codes used\n"
         )
 
-        # Majority verb distribution in this cluster
-        if cluster_verb_counts is not None:
-            verb_counts = cluster_verb_counts[cluster_id]
-            analysis += "\nMajority verb distribution in this cluster:\n"
-            for verb, count in verb_counts.most_common(15):
+        # Atomic verb distribution in this cluster
+        if cluster_atomic_verb_counts is not None:
+            atomic_counts = cluster_atomic_verb_counts[cluster_id]
+            analysis += "\nAtomic verb distribution in this cluster:\n"
+            for verb, count in atomic_counts.most_common(15):
                 analysis += (
-                    f"  {verb:20s}: {count:4d} samples "
+                    f"  {verb:20s}: {count:4d} occurrences\n"
+                )
+
+        # Compound verb distribution in this cluster
+        if cluster_compound_verb_counts is not None:
+            compound_counts = cluster_compound_verb_counts[cluster_id]
+            analysis += "\nCompound verb distribution in this cluster (top 15):\n"
+            for verb, count in compound_counts.most_common(15):
+                verb_display = verb if verb else "(no verb)"
+                analysis += (
+                    f"  {verb_display:40s}: {count:4d} samples "
                     f"({count/len(cluster_texts)*100:.1f}%)\n"
                 )
 
@@ -572,7 +663,7 @@ def main():
         code_indices = data["code_indices"]
         texts = data["texts"]
         names = data["names"]
-        majority_verbs = data["majority_verbs"]
+        compound_verbs = data["compound_verbs"]
     else:
         # Load from legacy numpy files
         encoder_embeddings = np.load(os.path.join(args.data_dir, "encoder_embeddings.npy"))
@@ -583,8 +674,8 @@ def main():
         with open(os.path.join(args.data_dir, "names.txt"), "r") as f:
             names = f.read().strip().split("\n")
 
-        # No majority verbs available from legacy format
-        majority_verbs = None
+        # No compound verbs available from legacy format
+        compound_verbs = None
 
     print(f"  Encoder embeddings: {encoder_embeddings.shape}")
     print(f"  Code indices: {code_indices.shape}")
@@ -634,10 +725,19 @@ def main():
         os.path.join(args.save_dir, "embeddings_processed.npy"), embeddings_processed
     )
 
-    # Label clusters by majority verbs
-    cluster_verb_labels, cluster_verb_counts = label_clusters_by_majority_verb(
-        labels, majority_verbs
+    # Label clusters by finding most frequent atomic verb in each cluster
+    print("\n" + "=" * 80)
+    print("Labeling clusters by most frequent atomic verb...")
+    print("=" * 80)
+    cluster_verb_labels, cluster_atomic_verb_counts, cluster_compound_verb_counts = label_clusters_by_majority_verb(
+        labels, compound_verbs
     )
+
+    # Print cluster labels
+    if cluster_verb_labels:
+        print("\nCluster labels (atomic verb):")
+        for cluster_id in sorted(cluster_verb_labels.keys()):
+            print(f"  Cluster {cluster_id:2d}: {cluster_verb_labels[cluster_id]}")
 
     # Visualize clusters
     print("\n" + "=" * 80)
@@ -654,8 +754,25 @@ def main():
         texts,
         code_indices,
         args.save_dir,
-        majority_verbs=majority_verbs,
+        compound_verbs=compound_verbs,
+        cluster_verb_labels=cluster_verb_labels,
+        cluster_atomic_verb_counts=cluster_atomic_verb_counts,
+        cluster_compound_verb_counts=cluster_compound_verb_counts,
     )
+
+    # Save clustered HDF5 with cluster assignments and labels
+    if args.hdf5_file:
+        print("\n" + "=" * 80)
+        print("Saving clustered HDF5 file...")
+        print("=" * 80)
+        clustered_hdf5_path = os.path.join(args.save_dir, "embeddings_clustered.h5")
+        save_clustered_hdf5(
+            data,
+            labels,
+            cluster_verb_labels,
+            clustered_hdf5_path,
+        )
+        print(f"Saved clustered embeddings to {clustered_hdf5_path}")
 
     print("\n" + "=" * 80)
     print(f"✓ Done! All results saved to {args.save_dir}/")
@@ -664,13 +781,15 @@ def main():
     if args.elbow_method:
         print("  - elbow_method.png: elbow method plot with inertia and silhouette scores")
     print("  - cluster_labels.npy: K-means cluster assignments (N,)")
-    if majority_verbs is not None:
-        print("  - cluster_verb_labels.txt: most frequent majority verb label for each cluster")
+    if cluster_verb_labels:
+        print("  - cluster_verb_labels.txt: atomic verb label for each cluster")
     print("  - embeddings_processed.npy: processed embeddings used for clustering")
-    print("  - clusters_pca.png: PCA visualization with verb labels")
-    print("  - clusters_tsne.png: t-SNE visualization with verb labels")
+    print("  - clusters_pca.png: PCA visualization with atomic verb labels")
+    print("  - clusters_tsne.png: t-SNE visualization with atomic verb labels")
     print("  - pca_variance.png: PCA variance analysis")
-    print("  - cluster_analysis.txt: detailed K-means cluster analysis")
+    print("  - cluster_analysis.txt: detailed cluster analysis (atomic + compound verb distributions)")
+    if args.hdf5_file:
+        print("  - embeddings_clustered.h5: HDF5 file with cluster assignments and atomic verb labels")
 
 
 if __name__ == "__main__":
