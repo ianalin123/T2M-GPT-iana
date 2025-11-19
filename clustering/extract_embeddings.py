@@ -17,29 +17,39 @@ if PROJECT_ROOT not in sys.path:
 import models.vqvae as vqvae  # noqa: E402
 
 
-def extract_verbs_from_text(text):
+def load_verb_labels_from_file(verb_file_path):
     """
-    Extract verbs from annotated text following HumanML3D format.
+    Load pre-extracted verb labels from verbs.txt file.
 
     Args:
-        text: Text string with format "description#annotated tokens#..."
+        verb_file_path: Path to verbs.txt file (e.g., dataset/HumanML3D/verbs.txt)
 
     Returns:
-        set of verb strings
+        dict mapping file_id to compound verb string
     """
-    verbs = set()
+    verb_labels = {}
 
-    # Split by # to get annotated tokens section
-    parts = text.split("#")
-    if len(parts) < 2:
-        return verbs
+    if not os.path.exists(verb_file_path):
+        print(f"Warning: Verb labels file not found at {verb_file_path}")
+        return verb_labels
 
-    tokens = parts[1].split(" ")
-    for token in tokens:
-        if "/VERB" in token:
-            verbs.add(token.strip("/VERB"))
+    with open(verb_file_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split(' ', 1)
+            if len(parts) == 2:
+                file_id, compound_verb = parts
+                verb_labels[file_id] = compound_verb
+            else:
+                # Handle case where there might be no verbs
+                verb_labels[parts[0]] = ""
 
-    return verbs
+    print(f"Loaded {len(verb_labels)} verb labels from {verb_file_path}")
+    return verb_labels
+
+
 
 
 def get_majority_verb(compound_verb):
@@ -64,12 +74,13 @@ def get_majority_verb(compound_verb):
     return verbs[0]
 
 
-def extract_verb_labels(texts):
+def extract_verb_labels(names, verb_labels_dict):
     """
-    Extract compound and majority verb labels for all texts.
+    Extract compound and majority verb labels for samples using pre-extracted verb labels.
 
     Args:
-        texts: List of text strings with HumanML3D annotations
+        names: List of sample names/IDs to map to verb labels
+        verb_labels_dict: dict mapping file_id to compound verb string (from verbs.txt)
 
     Returns:
         dict with:
@@ -79,10 +90,13 @@ def extract_verb_labels(texts):
     compound_verbs = []
     majority_verbs = []
 
-    for text in texts:
-        verbs = extract_verbs_from_text(text)
-        # Sort alphabetically and join with hyphen
-        compound_verb = "-".join(sorted(list(verbs)))
+    for name in names:
+        # Remove any prefix (e.g., "A_" in "A_000021" -> "000021")
+        # Some samples have letter prefixes for temporal splits
+        base_name = name.split('_')[-1] if '_' in name else name
+
+        # Get verb label from dictionary
+        compound_verb = verb_labels_dict.get(base_name, "")
         majority_verb = get_majority_verb(compound_verb)
 
         compound_verbs.append(compound_verb)
@@ -249,7 +263,7 @@ def extract_all_embeddings(net, dataloader, device="cuda", max_batches=None):
     }
 
 
-def save_embeddings_hdf5(data, save_path, split="train"):
+def save_embeddings_hdf5(data, save_path, split="train", verb_labels_dict=None):
     """
     Save embeddings and metadata to HDF5 file with hierarchical structure.
 
@@ -267,12 +281,24 @@ def save_embeddings_hdf5(data, save_path, split="train"):
         data: dict with encoder_embeddings, quantized_embeddings, code_indices, texts, names, etc.
         save_path: Path to save HDF5 file
         split: Dataset split name (train/val/test)
+        verb_labels_dict: dict mapping file_id to compound verb string (loaded from verbs.txt)
+                         Format: {"000021": "walk", "M009233": "stop-walk", ...}
     """
     print(f"\nSaving embeddings to HDF5: {save_path}")
 
-    # Extract verb labels from texts
-    print("Extracting verb labels...")
-    verb_labels = extract_verb_labels(data["texts"])
+    if verb_labels_dict is None:
+        raise ValueError("verb_labels_dict is required. Please run extract_verbs.py first to generate verbs.txt")
+
+    # Map verb labels to samples using their IDs
+    print("Mapping verb labels to samples...")
+    verb_labels = extract_verb_labels(data["names"], verb_labels_dict)
+
+    # Report statistics
+    non_empty_verbs = sum(1 for v in verb_labels["compound_verbs"] if v)
+    print(f"  Successfully mapped {non_empty_verbs}/{len(data['names'])} samples to verb labels")
+    if non_empty_verbs < len(data["names"]):
+        missing = len(data["names"]) - non_empty_verbs
+        print(f"  Warning: {missing} samples have no verb labels in verbs.txt")
 
     with h5py.File(save_path, "w") as f:
         # Add metadata attributes at root level
@@ -422,6 +448,18 @@ def main():
     dataset, dataloader = load_dataset(args, split=args.split)
     print(f"Dataset: {args.dataname}, Split: {args.split}, Size: {len(dataset)}")
 
+    # Load verb labels from file
+    verb_labels_dict = None
+    if args.dataname == 't2m':
+        verb_file_path = './dataset/HumanML3D/verbs.txt'
+        verb_labels_dict = load_verb_labels_from_file(verb_file_path)
+    elif args.dataname == 'kit':
+        verb_file_path = './dataset/KIT-ML/verbs.txt'
+        if os.path.exists(verb_file_path):
+            verb_labels_dict = load_verb_labels_from_file(verb_file_path)
+        else:
+            print(f"Warning: No verb labels file found for KIT dataset at {verb_file_path}")
+
     # Extract embeddings
     print("\n" + "=" * 80)
     print("Extracting embeddings...")
@@ -445,7 +483,7 @@ def main():
 
     # Save to HDF5 format (with verbs)
     hdf5_path = os.path.join(args.save_dir, "embeddings.h5")
-    save_embeddings_hdf5(data, hdf5_path, split=args.split)
+    save_embeddings_hdf5(data, hdf5_path, split=args.split, verb_labels_dict=verb_labels_dict)
 
     # Also save numpy files for backward compatibility
     print(f"\nSaving numpy files for backward compatibility to {args.save_dir}/...")
