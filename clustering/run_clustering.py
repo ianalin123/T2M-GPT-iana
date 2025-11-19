@@ -271,7 +271,7 @@ def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000,
             labels_to_plot = labels_vis
         fig, ax = plt.subplots(figsize=(16, 12))
         unique_plot_labels = np.unique(labels_to_plot)
-         for cluster_id in unique_plot_labels:
+        for cluster_id in unique_plot_labels:
             mask = labels_to_plot == cluster_id
             if cluster_id == -1:
                 cluster_label = "Noise"
