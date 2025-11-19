@@ -177,8 +177,8 @@ def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", pca_dim=50):
     return labels, kmeans, embeddings_agg, pca
 
 
-def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000):
-    """Create PCA visualizations of clustered embeddings."""
+def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000, cluster_verb_labels=None):
+    """Create PCA and t-SNE visualizations of clustered embeddings."""
 
     # Subsample if too many
     if len(embeddings) > max_samples:
@@ -190,33 +190,115 @@ def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000)
         embeddings_vis = embeddings
         labels_vis = labels
 
+    # Get unique clusters and their verb labels
+    unique_labels = np.unique(labels_vis)
+    n_clusters = len(unique_labels)
+
+    # Create color map
+    if n_clusters <= 20:
+        cmap = plt.cm.get_cmap("tab20")
+    else:
+        cmap = plt.cm.get_cmap("tab20b")
+
     # PCA - Fast and interpretable!
     print("\nComputing PCA for visualization...")
     pca_viz = PCA(n_components=2)
     embeddings_pca = pca_viz.fit_transform(embeddings_vis)
 
-    plt.figure(figsize=(14, 10))
-    scatter = plt.scatter(
-        embeddings_pca[:, 0],
-        embeddings_pca[:, 1],
-        c=labels_vis,
-        cmap="tab20",
-        alpha=0.6,
-        s=10,
-    )
-    plt.colorbar(scatter, label="Cluster")
-    plt.title(
+    fig, ax = plt.subplots(figsize=(16, 12))
+
+    # Plot each cluster separately for legend
+    for cluster_id in unique_labels:
+        mask = labels_vis == cluster_id
+        cluster_label = f"Cluster {cluster_id}"
+        if cluster_verb_labels and cluster_id in cluster_verb_labels:
+            verb = cluster_verb_labels[cluster_id]
+            cluster_label = f"{cluster_id}: {verb}" if verb else f"{cluster_id}: (no verb)"
+
+        ax.scatter(
+            embeddings_pca[mask, 0],
+            embeddings_pca[mask, 1],
+            c=[cmap(cluster_id / n_clusters)],
+            label=cluster_label,
+            alpha=0.6,
+            s=10,
+        )
+
+    ax.set_xlabel(f"PC1 ({pca_viz.explained_variance_ratio_[0]:.1%} variance)", fontsize=12)
+    ax.set_ylabel(f"PC2 ({pca_viz.explained_variance_ratio_[1]:.1%} variance)", fontsize=12)
+    ax.set_title(
         "PCA Visualization of Latent Embeddings\n"
         f"(PC1: {pca_viz.explained_variance_ratio_[0]:.1%}, "
         f"PC2: {pca_viz.explained_variance_ratio_[1]:.1%}, "
-        f"Total: {pca_viz.explained_variance_ratio_.sum():.1%})"
+        f"Total: {pca_viz.explained_variance_ratio_.sum():.1%})",
+        fontsize=14,
+        fontweight='bold'
     )
-    plt.xlabel(f"PC1 ({pca_viz.explained_variance_ratio_[0]:.1%} variance)")
-    plt.ylabel(f"PC2 ({pca_viz.explained_variance_ratio_[1]:.1%} variance)")
+
+    # Add legend
+    if n_clusters <= 30:
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=1, fontsize=8)
+    else:
+        # For many clusters, use smaller font and multiple columns
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=2, fontsize=6)
+
     plt.tight_layout()
     os.makedirs(save_dir, exist_ok=True)
     plt.savefig(os.path.join(save_dir, "clusters_pca.png"), dpi=300, bbox_inches="tight")
     print(f"Saved PCA visualization to {os.path.join(save_dir, 'clusters_pca.png')}")
+    plt.close()
+
+    # t-SNE - Better for visualizing local structure
+    print("\nComputing t-SNE for visualization...")
+    from sklearn.manifold import TSNE
+
+    # For t-SNE, use fewer samples if needed (it's slower)
+    max_tsne_samples = min(10000, len(embeddings_vis))
+    if len(embeddings_vis) > max_tsne_samples:
+        print(f"  Subsampling to {max_tsne_samples} points for t-SNE...")
+        indices_tsne = np.random.choice(len(embeddings_vis), max_tsne_samples, replace=False)
+        embeddings_tsne_input = embeddings_vis[indices_tsne]
+        labels_tsne = labels_vis[indices_tsne]
+    else:
+        embeddings_tsne_input = embeddings_vis
+        labels_tsne = labels_vis
+
+    tsne = TSNE(n_components=2, random_state=42, perplexity=30, n_iter=1000, verbose=1)
+    embeddings_tsne = tsne.fit_transform(embeddings_tsne_input)
+
+    fig, ax = plt.subplots(figsize=(16, 12))
+
+    # Plot each cluster separately for legend
+    unique_labels_tsne = np.unique(labels_tsne)
+    for cluster_id in unique_labels_tsne:
+        mask = labels_tsne == cluster_id
+        cluster_label = f"Cluster {cluster_id}"
+        if cluster_verb_labels and cluster_id in cluster_verb_labels:
+            verb = cluster_verb_labels[cluster_id]
+            cluster_label = f"{cluster_id}: {verb}" if verb else f"{cluster_id}: (no verb)"
+
+        ax.scatter(
+            embeddings_tsne[mask, 0],
+            embeddings_tsne[mask, 1],
+            c=[cmap(cluster_id / n_clusters)],
+            label=cluster_label,
+            alpha=0.6,
+            s=10,
+        )
+
+    ax.set_xlabel("t-SNE Dimension 1", fontsize=12)
+    ax.set_ylabel("t-SNE Dimension 2", fontsize=12)
+    ax.set_title("t-SNE Visualization of Latent Embeddings", fontsize=14, fontweight='bold')
+
+    # Add legend
+    if n_clusters <= 30:
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=1, fontsize=8)
+    else:
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=2, fontsize=6)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, "clusters_tsne.png"), dpi=300, bbox_inches="tight")
+    print(f"Saved t-SNE visualization to {os.path.join(save_dir, 'clusters_tsne.png')}")
     plt.close()
 
     # PCA with more components for scree plot
@@ -552,11 +634,16 @@ def main():
         os.path.join(args.save_dir, "embeddings_processed.npy"), embeddings_processed
     )
 
+    # Label clusters by majority verbs
+    cluster_verb_labels, cluster_verb_counts = label_clusters_by_majority_verb(
+        labels, majority_verbs
+    )
+
     # Visualize clusters
     print("\n" + "=" * 80)
     print("Visualizing clusters...")
     print("=" * 80)
-    visualize_clusters(embeddings_processed, labels, texts, args.save_dir)
+    visualize_clusters(embeddings_processed, labels, texts, args.save_dir, cluster_verb_labels=cluster_verb_labels)
 
     # Analyze K-means clusters
     print("\n" + "=" * 80)
@@ -580,7 +667,8 @@ def main():
     if majority_verbs is not None:
         print("  - cluster_verb_labels.txt: most frequent majority verb label for each cluster")
     print("  - embeddings_processed.npy: processed embeddings used for clustering")
-    print("  - clusters_pca.png: PCA visualization")
+    print("  - clusters_pca.png: PCA visualization with verb labels")
+    print("  - clusters_tsne.png: t-SNE visualization with verb labels")
     print("  - pca_variance.png: PCA variance analysis")
     print("  - cluster_analysis.txt: detailed K-means cluster analysis")
 
