@@ -1,7 +1,9 @@
 import os
 import sys
 import argparse
+from collections import Counter
 
+import h5py
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -13,6 +15,83 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 import models.vqvae as vqvae  # noqa: E402
+
+
+def extract_verbs_from_text(text):
+    """
+    Extract verbs from annotated text following HumanML3D format.
+
+    Args:
+        text: Text string with format "description#annotated tokens#..."
+
+    Returns:
+        set of verb strings
+    """
+    verbs = set()
+
+    # Split by # to get annotated tokens section
+    parts = text.split("#")
+    if len(parts) < 2:
+        return verbs
+
+    tokens = parts[1].split(" ")
+    for token in tokens:
+        if "/VERB" in token:
+            verbs.add(token.strip("/VERB"))
+
+    return verbs
+
+
+def get_majority_verb(compound_verb):
+    """
+    Get the majority (most common) verb from a compound verb string.
+
+    Args:
+        compound_verb: String like "walk-run-jump" (alphabetically sorted verbs)
+
+    Returns:
+        Single most common verb, or first alphabetically if tie
+    """
+    if not compound_verb or compound_verb == "":
+        return ""
+
+    verbs = compound_verb.split("-")
+    if len(verbs) == 1:
+        return verbs[0]
+
+    # For compound verbs, return the first one (they're already sorted alphabetically)
+    # In future could use frequency analysis from training data
+    return verbs[0]
+
+
+def extract_verb_labels(texts):
+    """
+    Extract compound and majority verb labels for all texts.
+
+    Args:
+        texts: List of text strings with HumanML3D annotations
+
+    Returns:
+        dict with:
+            - compound_verbs: list of compound verb strings (e.g., "walk-run")
+            - majority_verbs: list of single majority verbs
+    """
+    compound_verbs = []
+    majority_verbs = []
+
+    for text in texts:
+        verbs = extract_verbs_from_text(text)
+        # Sort alphabetically and join with hyphen
+        compound_verb = "-".join(sorted(list(verbs)))
+        majority_verb = get_majority_verb(compound_verb)
+
+        compound_verbs.append(compound_verb)
+        majority_verbs.append(majority_verb)
+
+    return {
+        "compound_verbs": compound_verbs,
+        "majority_verbs": majority_verbs,
+    }
 
 
 def extract_encoder_embeddings(net, motion_batch):
@@ -170,6 +249,73 @@ def extract_all_embeddings(net, dataloader, device="cuda", max_batches=None):
     }
 
 
+def save_embeddings_hdf5(data, save_path, split="train"):
+    """
+    Save embeddings and metadata to HDF5 file with hierarchical structure.
+
+    Structure:
+        /[file_id]/
+            compound_verb (attribute)
+            majority_verb (attribute)
+            text (attribute)
+            length (attribute)
+            encoder_embeddings (dataset)
+            quantized_embeddings (dataset)
+            code_indices (dataset)
+
+    Args:
+        data: dict with encoder_embeddings, quantized_embeddings, code_indices, texts, names, etc.
+        save_path: Path to save HDF5 file
+        split: Dataset split name (train/val/test)
+    """
+    print(f"\nSaving embeddings to HDF5: {save_path}")
+
+    # Extract verb labels from texts
+    print("Extracting verb labels...")
+    verb_labels = extract_verb_labels(data["texts"])
+
+    with h5py.File(save_path, "w") as f:
+        # Add metadata attributes at root level
+        f.attrs["split"] = split
+        f.attrs["n_samples"] = len(data["names"])
+        f.attrs["embedding_dim"] = data["encoder_embeddings"].shape[-1]
+
+        # Create a group for each sample
+        for idx, name in enumerate(tqdm(data["names"], desc="Writing to HDF5")):
+            # Create group for this sample using file ID as key
+            sample_group = f.create_group(name)
+
+            # Add verb labels as attributes
+            sample_group.attrs["compound_verb"] = verb_labels["compound_verbs"][idx]
+            sample_group.attrs["majority_verb"] = verb_labels["majority_verbs"][idx]
+
+            # Add embeddings as datasets
+            sample_group.create_dataset(
+                "encoder_embeddings",
+                data=data["encoder_embeddings"][idx],
+                compression="gzip",
+                compression_opts=4,
+            )
+            sample_group.create_dataset(
+                "quantized_embeddings",
+                data=data["quantized_embeddings"][idx],
+                compression="gzip",
+                compression_opts=4,
+            )
+            sample_group.create_dataset(
+                "code_indices",
+                data=data["code_indices"][idx],
+                compression="gzip",
+                compression_opts=4,
+            )
+
+            # Add metadata as attributes
+            sample_group.attrs["text"] = data["texts"][idx]
+            sample_group.attrs["length"] = int(data["lengths"][idx])
+
+    print(f"✓ Saved {len(data['names'])} samples to {save_path}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Extract VQ-VAE encoder embeddings from the motion dataset"
@@ -287,18 +433,31 @@ def main():
 
     print("\nExtracted data shapes:")
     print(f"  Encoder embeddings: {data['encoder_embeddings'].shape}")
+    print(f"  Quantized embeddings: {data['quantized_embeddings'].shape}")
     print(f"  Code indices: {data['code_indices'].shape}")
     print(f"  Number of texts: {len(data['texts'])}")
     print(f"  Number of samples: {len(data['names'])}")
 
-    # Save raw data
-    print(f"\nSaving raw embeddings to {args.save_dir}/...")
+    # Save to HDF5
+    print("\n" + "=" * 80)
+    print("Saving embeddings to HDF5...")
+    print("=" * 80)
+
+    # Save to HDF5 format (with verbs)
+    hdf5_path = os.path.join(args.save_dir, "embeddings.h5")
+    save_embeddings_hdf5(data, hdf5_path, split=args.split)
+
+    # Also save numpy files for backward compatibility
+    print(f"\nSaving numpy files for backward compatibility to {args.save_dir}/...")
     np.save(
         os.path.join(args.save_dir, "encoder_embeddings.npy"),
         data["encoder_embeddings"],
     )
+    np.save(
+        os.path.join(args.save_dir, "quantized_embeddings.npy"),
+        data["quantized_embeddings"],
+    )
     np.save(os.path.join(args.save_dir, "code_indices.npy"), data["code_indices"])
-    # np.save(os.path.join(args.save_dir, "motions.npy"), data["motions"])
     np.save(os.path.join(args.save_dir, "lengths.npy"), data["lengths"])
     with open(os.path.join(args.save_dir, "texts.txt"), "w") as f:
         f.write("\n".join(data["texts"]))
@@ -306,7 +465,7 @@ def main():
         f.write("\n".join(data["names"]))
 
     print("\n" + "=" * 80)
-    print(f"✓ Done! Embeddings saved to {args.save_dir}/")
+    print(f"✓ Done! Embeddings saved to {hdf5_path}")
     print("=" * 80)
 
 
