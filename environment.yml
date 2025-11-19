@@ -120,5 +120,5 @@ dependencies:
     - gdown
     - moviepy
     - h5py
-    - umap-learn
-    - hdbscan
+    - umap-learn==0.5.2
+    # - hdbscan==0.8.24

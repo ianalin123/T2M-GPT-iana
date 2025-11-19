@@ -13,7 +13,11 @@ from tqdm import tqdm
 # new imports
 import h5py
 import umap
-import hdbscan
+try:
+    import hdbscan
+    HDBSCAN_AVAILABLE = True
+except ImportError:
+    HDBSCAN_AVAILABLE = False
 
 # Ensure project root is on the path so we can import project modules if needed
 # Since we're now in clustering/, go up one level to get to project root
@@ -200,6 +204,8 @@ def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", dim_reductio
         print(f"GMM BIC: {model.bic(embeddings_agg):.2f}, AIC: {model.aic(embeddings_agg):.2f}")
     
     elif algorithm == "hdbscan":
+        if not HDBSCAN_AVAILABLE:
+            raise ImportError("HDBSCAN is not installed. Please install it with: pip install hdbscan")
         print(f"\nClustering with HDBSCAN (min_cluster_size={min_cluster_size})...")
         model = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size, min_samples=None, metric='euclidean', 
                                 cluster_selection_method='eom', prediction_data=True)
@@ -665,7 +671,7 @@ def main():
     )
     parser.add_argument(
         "--dim-reduction",
-        default="umpa",
+        default="umap",
         choices=["pca", "umap", "none"],
         help="Dimensionality reduction method: 'pca', 'umap', or 'none' (default: pca)",
     )
