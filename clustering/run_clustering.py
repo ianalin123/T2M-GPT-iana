@@ -391,24 +391,28 @@ def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000,
     plt.close()
 
 
-def load_data_from_hdf5(hdf5_path):
+def load_data_from_hdf5(hdf5_path, use_quantized=False):
     """
     Load embeddings and metadata from HDF5 file.
 
     Args:
         hdf5_path: Path to HDF5 embeddings file
+        use_quantized: If True, use quantized_embeddings instead of encoder_embeddings
 
     Returns:
         dict with:
-            - encoder_embeddings: (N, T', D) numpy array
+            - encoder_embeddings: (N, T', D) numpy array (or quantized if use_quantized=True)
             - code_indices: (N, T') numpy array
             - texts: list of text descriptions
             - names: list of sample IDs
             - compound_verbs: list of compound verb labels (e.g., "walk-run-sit")
     """
     print(f"Loading data from HDF5: {hdf5_path}")
+    
+    embedding_key = "quantized_embeddings" if use_quantized else "encoder_embeddings"
+    print(f"Using '{embedding_key}' for clustering")
 
-    encoder_embeddings = []
+    embeddings = []
     code_indices = []
     texts = []
     names = []
@@ -418,14 +422,14 @@ def load_data_from_hdf5(hdf5_path):
         for sample_id in f.keys():
             sample_group = f[sample_id]
 
-            encoder_embeddings.append(sample_group["encoder_embeddings"][:])
+            embeddings.append(sample_group[embedding_key][:])
             code_indices.append(sample_group["code_indices"][:])
             texts.append(sample_group.attrs["text"])
             names.append(sample_id)
             compound_verbs.append(sample_group.attrs["compound_verb"])
 
     return {
-        "encoder_embeddings": np.array(encoder_embeddings),
+        "encoder_embeddings": np.array(embeddings),  # Keep name for compatibility
         "code_indices": np.array(code_indices),
         "texts": texts,
         "names": names,
@@ -755,6 +759,11 @@ def main():
         type=int,
         help="Number of dimensions for dimensionality reduction (default: 50)",
     )
+    parser.add_argument(
+        "--use-quantized",
+        action="store_true",
+        help="Use quantized embeddings instead of encoder embeddings for clustering (only works with --hdf5-file)",
+    )
 
     args = parser.parse_args()
 
@@ -768,8 +777,12 @@ def main():
 
     # Load from HDF5 or legacy numpy files
     if args.hdf5_file:
+        # Validate --use-quantized option
+        if args.use_quantized:
+            print("\n⚠️  Using quantized embeddings for clustering")
+        
         # Load from HDF5
-        data = load_data_from_hdf5(args.hdf5_file)
+        data = load_data_from_hdf5(args.hdf5_file, use_quantized=args.use_quantized)
         encoder_embeddings = data["encoder_embeddings"]
         code_indices = data["code_indices"]
         texts = data["texts"]
@@ -777,6 +790,9 @@ def main():
         compound_verbs = data["compound_verbs"]
     else:
         # Load from legacy numpy files
+        if args.use_quantized:
+            print("\n⚠️  WARNING: --use-quantized only works with --hdf5-file. Ignoring flag.")
+        
         encoder_embeddings = np.load(os.path.join(args.data_dir, "encoder_embeddings.npy"))
         code_indices = np.load(os.path.join(args.data_dir, "code_indices.npy"))
 
