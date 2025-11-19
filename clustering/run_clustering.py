@@ -12,7 +12,11 @@ from tqdm import tqdm
 
 # new imports
 import h5py
-import umap
+try
+    import umap
+    UMAP_AVAILABLE = True
+except ImportError:
+    UMAP_AVAILABLE = False
 try:
     import hdbscan
     HDBSCAN_AVAILABLE = True
