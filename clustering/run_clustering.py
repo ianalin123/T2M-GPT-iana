@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 # new imports
 import h5py
-try
+try:
     import umap
     UMAP_AVAILABLE = True
 except ImportError:
