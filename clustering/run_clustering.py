@@ -211,8 +211,13 @@ def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", dim_reductio
         if not HDBSCAN_AVAILABLE:
             raise ImportError("HDBSCAN is not installed. Please install it with: pip install hdbscan")
         print(f"\nClustering with HDBSCAN (min_cluster_size={min_cluster_size})...")
-        model = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size, min_samples=None, metric='euclidean', 
-                                cluster_selection_method='eom', prediction_data=True)
+        model = hdbscan.HDBSCAN(
+            min_cluster_size=min_cluster_size,
+            min_samples=None,
+            metric='euclidean',
+            cluster_selection_method='eom',
+            prediction_data=True
+        )
         labels = model.fit_predict(embeddings_agg)
         
         # HDBSCAN uses -1 for noise points
@@ -266,9 +271,11 @@ def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000,
             labels_to_plot = labels_vis
         fig, ax = plt.subplots(figsize=(16, 12))
         unique_plot_labels = np.unique(labels_to_plot)
-        for cluster_id in unique_plot_labels:
+         for cluster_id in unique_plot_labels:
             mask = labels_to_plot == cluster_id
-            if cluster_verb_labels and cluster_id in cluster_verb_labels:
+            if cluster_id == -1:
+                cluster_label = "Noise"
+            elif cluster_verb_labels and cluster_id in cluster_verb_labels:
                 verb = cluster_verb_labels[cluster_id]
                 cluster_label = verb if verb else "(no verb)"
             else:
@@ -522,7 +529,13 @@ def save_clustered_hdf5(data, labels, cluster_verb_labels, save_path):
 
             # Add cluster assignment and label
             sample_group.attrs["cluster_id"] = int(labels[idx])
-            sample_group.attrs["cluster_label"] = cluster_verb_labels[labels[idx]]
+            # Handle noise points for HDBSCAN (-1 cluster)
+            if labels[idx] == -1:
+                sample_group.attrs["cluster_label"] = "noise"
+            elif labels[idx] in cluster_verb_labels:
+                sample_group.attrs["cluster_label"] = cluster_verb_labels[labels[idx]]
+            else:
+                sample_group.attrs["cluster_label"] = "unknown"
 
             # Add text and length
             sample_group.attrs["text"] = data["texts"][idx]
@@ -719,16 +732,16 @@ def main():
         help="Number of clusters for K-means. Specify if you want to use a specific k, otherwise auto-selects k using elbow method with derivative.",
     )
     parser.add_argument(
-        "--auto-k-method",
-        default="derivative",
-        choices=["silhouette", "derivative"],
-        help="Method to choose optimal k when auto-selecting: 'derivative' (elbow point, default) or 'silhouette' (best silhouette score)",
-    )
-    parser.add_argument(
         "--max-clusters",
         default=30,
         type=int,
         help="Maximum number of clusters to test for elbow method (default: 30)",
+    )
+    parser.add_argument(
+        "--auto-k-method",
+        default="derivative",
+        choices=["silhouette", "derivative"],
+        help="Method to choose optimal k when auto-selecting: 'derivative' (elbow point, default) or 'silhouette' (best silhouette score)",
     )
     parser.add_argument(
         "--min-cluster-size",
