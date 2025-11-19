@@ -237,8 +237,8 @@ def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", dim_reductio
     return labels, model, embeddings_agg, reducer
 
 
-def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000, cluster_verb_labels=None):
-    """Create PCA and t-SNE visualizations of clustered embeddings."""
+def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000, cluster_verb_labels=None, dim_reduction_method=None):
+    """Create PCA, UMAP (if used), and t-SNE visualizations of clustered embeddings."""
 
     # Subsample if too many
     if len(embeddings) > max_samples:
@@ -260,54 +260,68 @@ def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000,
     else:
         cmap = plt.cm.get_cmap("tab20b")
 
+    # Helper function to plot clusters
+    def plot_clusters(embeddings_2d, xlabel, ylabel, title, save_path, labels_to_plot=None):
+        if labels_to_plot is None:
+            labels_to_plot = labels_vis
+        fig, ax = plt.subplots(figsize=(16, 12))
+        unique_plot_labels = np.unique(labels_to_plot)
+        for cluster_id in unique_plot_labels:
+            mask = labels_to_plot == cluster_id
+            if cluster_verb_labels and cluster_id in cluster_verb_labels:
+                verb = cluster_verb_labels[cluster_id]
+                cluster_label = verb if verb else "(no verb)"
+            else:
+                cluster_label = f"Cluster {cluster_id}"
+            
+            ax.scatter(
+                embeddings_2d[mask, 0],
+                embeddings_2d[mask, 1],
+                c=[cmap(cluster_id / n_clusters)],
+                label=cluster_label,
+                alpha=0.6,
+                s=10,
+            )
+        
+        ax.set_xlabel(xlabel, fontsize=12)
+        ax.set_ylabel(ylabel, fontsize=12)
+        ax.set_title(title, fontsize=14, fontweight='bold')
+        
+        if n_clusters <= 30:
+            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=1, fontsize=8)
+        else:
+            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=2, fontsize=6)
+        
+        plt.tight_layout()
+        os.makedirs(save_dir, exist_ok=True)
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
+        print(f"Saved visualization to {save_path}")
+        plt.close()
+
     # PCA - Fast and interpretable!
     print("\nComputing PCA for visualization...")
     pca_viz = PCA(n_components=2)
     embeddings_pca = pca_viz.fit_transform(embeddings_vis)
-
-    fig, ax = plt.subplots(figsize=(16, 12))
-
-    # Plot each cluster separately for legend
-    for cluster_id in unique_labels:
-        mask = labels_vis == cluster_id
-        if cluster_verb_labels and cluster_id in cluster_verb_labels:
-            verb = cluster_verb_labels[cluster_id]
-            cluster_label = verb if verb else "(no verb)"
-        else:
-            cluster_label = f"Cluster {cluster_id}"
-
-        ax.scatter(
-            embeddings_pca[mask, 0],
-            embeddings_pca[mask, 1],
-            c=[cmap(cluster_id / n_clusters)],
-            label=cluster_label,
-            alpha=0.6,
-            s=10,
-        )
-
-    ax.set_xlabel(f"PC1 ({pca_viz.explained_variance_ratio_[0]:.1%} variance)", fontsize=12)
-    ax.set_ylabel(f"PC2 ({pca_viz.explained_variance_ratio_[1]:.1%} variance)", fontsize=12)
-    ax.set_title(
-        "PCA Visualization of Latent Embeddings\n"
-        f"(PC1: {pca_viz.explained_variance_ratio_[0]:.1%}, "
-        f"PC2: {pca_viz.explained_variance_ratio_[1]:.1%}, "
-        f"Total: {pca_viz.explained_variance_ratio_.sum():.1%})",
-        fontsize=14,
-        fontweight='bold'
+    plot_clusters(
+        embeddings_pca,
+        f"PC1 ({pca_viz.explained_variance_ratio_[0]:.1%} variance)",
+        f"PC2 ({pca_viz.explained_variance_ratio_[1]:.1%} variance)",
+        f"PCA Visualization of Latent Embeddings\n(PC1: {pca_viz.explained_variance_ratio_[0]:.1%}, PC2: {pca_viz.explained_variance_ratio_[1]:.1%}, Total: {pca_viz.explained_variance_ratio_.sum():.1%})",
+        os.path.join(save_dir, "clusters_pca.png")
     )
 
-    # Add legend
-    if n_clusters <= 30:
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=1, fontsize=8)
-    else:
-        # For many clusters, use smaller font and multiple columns
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=2, fontsize=6)
-
-    plt.tight_layout()
-    os.makedirs(save_dir, exist_ok=True)
-    plt.savefig(os.path.join(save_dir, "clusters_pca.png"), dpi=300, bbox_inches="tight")
-    print(f"Saved PCA visualization to {os.path.join(save_dir, 'clusters_pca.png')}")
-    plt.close()
+    # UMAP visualization if UMAP was used for dimensionality reduction
+    if dim_reduction_method == "umap" and embeddings_vis.shape[1] >= 2:
+        print("\nCreating UMAP visualization from reduced embeddings...")
+        # Use first 2 dimensions of the already-reduced UMAP embeddings
+        embeddings_umap_2d = embeddings_vis[:, :2]
+        plot_clusters(
+            embeddings_umap_2d,
+            "UMAP Dimension 1",
+            "UMAP Dimension 2",
+            "UMAP Visualization of Latent Embeddings",
+            os.path.join(save_dir, "clusters_umap.png")
+        )
 
     # t-SNE - Better for visualizing local structure
     print("\nComputing t-SNE for visualization...")
@@ -326,42 +340,14 @@ def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000,
 
     tsne = TSNE(n_components=2, random_state=42, perplexity=30, n_iter=1000, verbose=1)
     embeddings_tsne = tsne.fit_transform(embeddings_tsne_input)
-
-    fig, ax = plt.subplots(figsize=(16, 12))
-
-    # Plot each cluster separately for legend
-    unique_labels_tsne = np.unique(labels_tsne)
-    for cluster_id in unique_labels_tsne:
-        mask = labels_tsne == cluster_id
-        if cluster_verb_labels and cluster_id in cluster_verb_labels:
-            verb = cluster_verb_labels[cluster_id]
-            cluster_label = verb if verb else "(no verb)"
-        else:
-            cluster_label = f"Cluster {cluster_id}"
-
-        ax.scatter(
-            embeddings_tsne[mask, 0],
-            embeddings_tsne[mask, 1],
-            c=[cmap(cluster_id / n_clusters)],
-            label=cluster_label,
-            alpha=0.6,
-            s=10,
-        )
-
-    ax.set_xlabel("t-SNE Dimension 1", fontsize=12)
-    ax.set_ylabel("t-SNE Dimension 2", fontsize=12)
-    ax.set_title("t-SNE Visualization of Latent Embeddings", fontsize=14, fontweight='bold')
-
-    # Add legend
-    if n_clusters <= 30:
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=1, fontsize=8)
-    else:
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=2, fontsize=6)
-
-    plt.tight_layout()
-    plt.savefig(os.path.join(save_dir, "clusters_tsne.png"), dpi=300, bbox_inches="tight")
-    print(f"Saved t-SNE visualization to {os.path.join(save_dir, 'clusters_tsne.png')}")
-    plt.close()
+    plot_clusters(
+        embeddings_tsne,
+        "t-SNE Dimension 1",
+        "t-SNE Dimension 2",
+        "t-SNE Visualization of Latent Embeddings",
+        os.path.join(save_dir, "clusters_tsne.png"),
+        labels_to_plot=labels_tsne
+    )
 
     # PCA with more components for scree plot
     print("\nComputing PCA scree plot...")
@@ -442,7 +428,7 @@ def load_data_from_hdf5(hdf5_path):
 
 def label_clusters_by_majority_verb(labels, compound_verbs):
     """
-    Label each k-means cluster by the most frequent atomic verb within it.
+    Label each cluster by the most frequent atomic verb within it.
 
     For each cluster:
     1. Collect all compound verb labels (e.g., "walk-run-sit")
@@ -450,7 +436,7 @@ def label_clusters_by_majority_verb(labels, compound_verbs):
     3. Find the most frequent atomic verb across all samples in that cluster
 
     Args:
-        labels: (N,) k-means cluster assignments
+        labels: (N,) cluster assignments (can include -1 for HDBSCAN noise)
         compound_verbs: list of compound verb strings (e.g., ["walk-run", "sit", ...])
 
     Returns:
@@ -461,12 +447,15 @@ def label_clusters_by_majority_verb(labels, compound_verbs):
     if compound_verbs is None:
         return None, None, None
 
-    n_clusters = len(np.unique(labels))
     cluster_atomic_verb_counts = defaultdict(Counter)
     cluster_compound_verb_counts = defaultdict(Counter)
 
     # Count verbs for each cluster
     for i, cluster_id in enumerate(labels):
+        # Skip noise points for HDBSCAN (labeled as -1)
+        if cluster_id == -1:
+            continue
+            
         compound_verb = compound_verbs[i] if i < len(compound_verbs) else ""
 
         # Count the compound verb itself
@@ -478,9 +467,10 @@ def label_clusters_by_majority_verb(labels, compound_verbs):
             for verb in atomic_verbs:
                 cluster_atomic_verb_counts[cluster_id][verb] += 1
 
-    # Find most frequent atomic verb for each cluster
+    # Find most frequent atomic verb for each cluster (excluding noise)
     cluster_verb_labels = {}
-    for cluster_id in range(n_clusters):
+    unique_clusters = [c for c in np.unique(labels) if c != -1]
+    for cluster_id in unique_clusters:
         atomic_counts = cluster_atomic_verb_counts[cluster_id]
         if atomic_counts:
             most_frequent_verb = atomic_counts.most_common(1)[0][0]
@@ -557,15 +547,28 @@ def save_clustered_hdf5(data, labels, cluster_verb_labels, save_path):
 
 def analyze_clusters(
     labels, texts, code_indices, save_dir, top_k=10, compound_verbs=None,
-    cluster_verb_labels=None, cluster_atomic_verb_counts=None, cluster_compound_verb_counts=None
+    cluster_verb_labels=None, cluster_atomic_verb_counts=None, cluster_compound_verb_counts=None,
+    algorithm="kmeans"
 ):
-    """Analyze what each K-means cluster represents."""
+    """Analyze what each cluster represents."""
+    
+    # Map algorithm to display name
+    algo_display = {
+        "kmeans": "K-Means",
+        "gmm": "Gaussian Mixture Model",
+        "hdbscan": "HDBSCAN"
+    }
+    algo_name = algo_display.get(algorithm, "K-Means")
 
     print("\n" + "=" * 80)
-    print("CLUSTER ANALYSIS (K-MEANS)")
+    print(f"CLUSTER ANALYSIS ({algo_name.upper()})")
     print("=" * 80)
 
-    n_clusters = len(np.unique(labels))
+    # Handle noise points for HDBSCAN
+    if algorithm == "hdbscan":
+        n_clusters = len(np.unique(labels[labels != -1]))
+    else:
+        n_clusters = len(np.unique(labels))
 
     analysis_path = os.path.join(save_dir, "cluster_analysis.txt")
     analysis_file = open(analysis_path, "w")
@@ -574,23 +577,45 @@ def analyze_clusters(
     if cluster_verb_labels is not None:
         cluster_labels_path = os.path.join(save_dir, "cluster_verb_labels.txt")
         with open(cluster_labels_path, "w") as f:
-            for cluster_id in range(n_clusters):
+            for cluster_id in sorted(cluster_verb_labels.keys()):
                 f.write(f"{cluster_id}\t{cluster_verb_labels[cluster_id]}\n")
         print(f"Saved cluster verb labels to {cluster_labels_path}")
 
-    for cluster_id in range(n_clusters):
+    # Get unique cluster IDs (excluding noise for HDBSCAN)
+    if algorithm == "hdbscan":
+        cluster_ids = sorted([c for c in np.unique(labels) if c != -1])
+    else:
+        cluster_ids = range(n_clusters)
+    
+    # Handle noise cluster separately for HDBSCAN
+    if algorithm == "hdbscan" and -1 in labels:
+        noise_mask = labels == -1
+        noise_texts = [texts[i] for i, m in enumerate(noise_mask) if m]
+        noise_codes = code_indices[noise_mask]
+        
+        analysis = f"\n{'='*80}\n"
+        analysis += (
+            f"{algo_name} Noise Points - {len(noise_texts)} samples "
+            f"({len(noise_texts)/len(labels)*100:.1f}%)\n"
+        )
+        analysis += f"{'='*80}\n"
+        analysis += "\nThese samples were not assigned to any cluster.\n"
+        analysis_file.write(analysis)
+        print(analysis)
+
+    for cluster_id in cluster_ids:
         mask = labels == cluster_id
         cluster_texts = [texts[i] for i, m in enumerate(mask) if m]
         cluster_codes = code_indices[mask]
 
         # Get cluster label
         cluster_label = ""
-        if cluster_verb_labels is not None:
+        if cluster_verb_labels is not None and cluster_id in cluster_verb_labels:
             cluster_label = f" ({cluster_verb_labels[cluster_id]})"
 
         analysis = f"\n{'='*80}\n"
         analysis += (
-            f"K-Means Cluster {cluster_id}{cluster_label} - {len(cluster_texts)} samples "
+            f"{algo_name} Cluster {cluster_id}{cluster_label} - {len(cluster_texts)} samples "
             f"({len(cluster_texts)/len(labels)*100:.1f}%)\n"
         )
         analysis += f"{'='*80}\n"
@@ -837,11 +862,18 @@ def main():
     print("\n" + "=" * 80)
     print("Visualizing clusters...")
     print("=" * 80)
-    visualize_clusters(embeddings_processed, labels, texts, args.save_dir, cluster_verb_labels=cluster_verb_labels)
+    visualize_clusters(
+        embeddings_processed, 
+        labels, 
+        texts, 
+        args.save_dir, 
+        cluster_verb_labels=cluster_verb_labels,
+        dim_reduction_method=dim_reduction_method
+    )
 
-    # Analyze K-means clusters
+    # Analyze clusters
     print("\n" + "=" * 80)
-    print("Analyzing K-means clusters...")
+    print(f"Analyzing {args.clustering_algorithm.upper()} clusters...")
     print("=" * 80)
     analyze_clusters(
         labels,
@@ -852,6 +884,7 @@ def main():
         cluster_verb_labels=cluster_verb_labels,
         cluster_atomic_verb_counts=cluster_atomic_verb_counts,
         cluster_compound_verb_counts=cluster_compound_verb_counts,
+        algorithm=args.clustering_algorithm,
     )
 
     # Save clustered HDF5 with cluster assignments and labels
@@ -872,16 +905,20 @@ def main():
     print(f"✓ Done! All results saved to {args.save_dir}/")
     print("=" * 80)
     print("\nGenerated files:")
-    if args.elbow_method:
+    if run_elbow:
         print("  - elbow_method.png: elbow method plot with inertia and silhouette scores")
-    print("  - cluster_labels.npy: K-means cluster assignments (N,)")
+    algo_display = {"kmeans": "K-Means", "gmm": "GMM", "hdbscan": "HDBSCAN"}
+    algo_name = algo_display.get(args.clustering_algorithm, "K-Means")
+    print(f"  - cluster_labels.npy: {algo_name} cluster assignments (N,)")
     if cluster_verb_labels:
         print("  - cluster_verb_labels.txt: atomic verb label for each cluster")
     print("  - embeddings_processed.npy: processed embeddings used for clustering")
     print("  - clusters_pca.png: PCA visualization with atomic verb labels")
+    if dim_reduction_method == "umap":
+        print("  - clusters_umap.png: UMAP visualization with atomic verb labels")
     print("  - clusters_tsne.png: t-SNE visualization with atomic verb labels")
     print("  - pca_variance.png: PCA variance analysis")
-    print("  - cluster_analysis.txt: detailed cluster analysis (atomic + compound verb distributions)")
+    print(f"  - cluster_analysis.txt: detailed cluster analysis ({algo_name.upper()}, atomic + compound verb distributions)")
     if args.hdf5_file:
         print("  - embeddings_clustered.h5: HDF5 file with cluster assignments and atomic verb labels")
 
