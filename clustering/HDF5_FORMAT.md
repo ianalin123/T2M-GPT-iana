@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `extract_embeddings.py` script now saves embeddings in HDF5 format with the following hierarchical structure:
+The `extract_embeddings.py` script saves embeddings in HDF5 format with the following hierarchical structure:
 
 ```
 embeddings.h5
@@ -14,7 +14,7 @@ embeddings.h5
 ├── [file_id_1]/  (e.g., "000001", "M012345")
 │   ├── [Attributes]
 │   │   ├── compound_verb: "walk-run-jump" (all verbs, sorted alphabetically)
-│   │   ├── majority_verb: "jump" (single most representative verb)
+
 │   │   ├── text: full text description with POS tags
 │   │   └── length: sequence length
 │   │
@@ -28,36 +28,7 @@ embeddings.h5
 ...
 ```
 
-## Verb Extraction
-
-Verbs are automatically extracted from the annotated text descriptions using the same logic as `dataset/humanML3d/extract_verbs.py`:
-
-1. **Compound Verb**: All verbs found in the text, joined by hyphens and sorted alphabetically
-   - Example: `"walk-run-jump"`
-   
-2. **Majority Verb**: The first verb (alphabetically) from the compound verb
-   - Example: `"jump"` (from "walk-run-jump")
-   - This provides a single label for each motion
-
-## Usage
-
-### Extracting Embeddings
-
-```bash
-python clustering/extract_embeddings.py \
-    --dataname t2m \
-    --split train \
-    --resume-pth pretrained/VQVAE/net_last.pth \
-    --save-dir clustering/outputs \
-    --batch-size 32
-```
-
-This will generate:
-- `embeddings.h5` - HDF5 file with full structure
-- `encoder_embeddings.npy`, `quantized_embeddings.npy`, `code_indices.npy` - NumPy arrays (backward compatibility)
-- `texts.txt`, `names.txt`, `lengths.npy` - Metadata files (backward compatibility)
-
-### Loading HDF5 Data
+### Checking HDF5 Data
 
 ```python
 import h5py
@@ -81,34 +52,35 @@ with h5py.File("clustering/outputs/embeddings.h5", "r") as f:
     text = sample.attrs["text"]
     length = sample.attrs["length"]
 
-# Load all encoder embeddings at once
-def load_all_embeddings(hdf5_path):
-    embeddings = []
-    names = []
-    majority_verbs = []
-    
-    with h5py.File(hdf5_path, "r") as f:
-        for name in f.keys():
-            embeddings.append(f[name]["encoder_embeddings"][:])
-            names.append(name)
-            majority_verbs.append(f[name].attrs["majority_verb"])
-    
-    return np.array(embeddings), names, majority_verbs
 ```
-
-### Testing the HDF5 File
-
-```bash
-# Inspect file structure
-python clustering/test_hdf5_loader.py \
-    --hdf5-file clustering/outputs/embeddings.h5 \
-    --show-samples 10
-
-# Test loading all data
-python clustering/test_hdf5_loader.py \
-    --hdf5-file clustering/outputs/embeddings.h5 \
-    --load-test \
-    --embedding-type encoder
+## After clustering:
+The `run_clustering.py` script can optionally write a *clustered* HDF5 file with assignments and verb labels:
+```
+embeddings_clustered.h5
+├── [Root Attributes]
+│ ├── n_samples: number of samples
+│ ├── n_clusters: number of K-means clusters
+│ ├── embedding_dim: dimensionality of encoder embeddings
+│ ├── cluster_0_label: atomic verb label for cluster 0 (e.g., "walk")
+│ ├── cluster_1_label: atomic verb label for cluster 1
+│ ├── ...
+│ └── cluster_{K-1}label: atomic verb label for cluster K-1
+│
+├── [file_id_1]/ (e.g., "000001", "M012345")
+│ ├── [Attributes]
+│ │ ├── compound_verb: original compound verb from embeddings.h5 / verbs.txt
+│ │ ├── cluster_id: integer K-means cluster assignment
+│ │ ├── cluster_label: atomic verb label for this cluster (e.g., "run")
+│ │ ├── text: full text description with POS tags
+│ │ └── length: sequence length (derived from encoder embeddings shape)
+│ │
+│ └── [Datasets]
+│ ├── encoder_embeddings: (T', D) continuous pre-quantization embeddings
+│ └── code_indices: (T',) discrete codebook indices
+│
+├── [file_id_2]/
+│ └── ...
+└── ...
 ```
 
 ## Backward Compatibility

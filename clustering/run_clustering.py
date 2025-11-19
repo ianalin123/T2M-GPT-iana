@@ -3,12 +3,17 @@ import sys
 import argparse
 from collections import defaultdict, Counter
 
-import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.mixture import GaussianMixture
 from tqdm import tqdm
+
+# new imports
+import h5py
+import umap
+import hdbscan
 
 # Ensure project root is on the path so we can import project modules if needed
 # Since we're now in clustering/, go up one level to get to project root
@@ -17,7 +22,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 
-def elbow_method(embeddings, max_clusters=30, aggregate="mean", pca_dim=50, save_dir=None):
+def elbow_method(embeddings, max_clusters=30, aggregate="mean", dim_reduction="pca", n_components=50, save_dir=None):
     """
     Apply the elbow method to determine optimal number of clusters.
 
@@ -25,7 +30,8 @@ def elbow_method(embeddings, max_clusters=30, aggregate="mean", pca_dim=50, save
         embeddings: (N, T', D) array of encoder embeddings
         max_clusters: maximum number of clusters to test
         aggregate: 'mean', 'max', 'flatten', or None
-        pca_dim: dimensionality reduction (None to skip)
+        dim_reduction: 'pca', 'umap', or None
+        n_components: number of dimensions for reduction (None to skip)
         save_dir: directory to save elbow plot (None to skip saving)
 
     Returns:
@@ -50,12 +56,20 @@ def elbow_method(embeddings, max_clusters=30, aggregate="mean", pca_dim=50, save
     else:
         embeddings_agg = embeddings
 
-    # PCA dimensionality reduction
-    if pca_dim and embeddings_agg.shape[1] > pca_dim:
-        print(f"\nReducing dimensionality with PCA to {pca_dim}...")
-        pca = PCA(n_components=pca_dim)
-        embeddings_agg = pca.fit_transform(embeddings_agg)
-        print(f"PCA explained variance: {pca.explained_variance_ratio_.sum():.2%}")
+    # Dimensionality reduction
+    if n_components and embeddings_agg.shape[1] > n_components:
+        if dim_reduction == "pca":
+            print(f"\nReducing dimensionality with PCA to {n_components}...")
+            reducer = PCA(n_components=n_components)
+            embeddings_agg = reducer.fit_transform(embeddings_agg)
+            print(f"PCA explained variance: {reducer.explained_variance_ratio_.sum():.2%}")
+        elif dim_reduction == "umap":
+            if not UMAP_AVAILABLE:
+                raise ImportError("UMAP is not installed. Please install it with: pip install umap-learn")
+            print(f"\nReducing dimensionality with UMAP to {n_components}...")
+            reducer = umap.UMAP(n_components=n_components, random_state=42, verbose=True)
+            embeddings_agg = reducer.fit_transform(embeddings_agg)
+            print(f"UMAP reduction complete: {embeddings_agg.shape}")
 
     # Test different numbers of clusters
     k_range = range(2, max_clusters + 1)
@@ -124,21 +138,24 @@ def elbow_method(embeddings, max_clusters=30, aggregate="mean", pca_dim=50, save
     return inertias, silhouette_scores, k_range, suggested_k, best_silhouette_k
 
 
-def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", pca_dim=50):
+def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", dim_reduction="pca", n_components=50, algorithm="kmeans", min_cluster_size=15):
     """
-    Cluster the continuous encoder embeddings with K-means.
+    Cluster the continuous encoder embeddings using various algorithms.
 
     Args:
         embeddings: (N, T', D) array of encoder embeddings
-        n_clusters: number of clusters
+        n_clusters: number of clusters (ignored for HDBSCAN)
         aggregate: 'mean', 'max', 'flatten', or None
-        pca_dim: dimensionality reduction (None to skip)
+        dim_reduction: 'pca', 'umap', or None
+        n_components: number of dimensions for reduction (None to skip)
+        algorithm: 'kmeans', 'gmm', or 'hdbscan'
+        min_cluster_size: minimum cluster size for HDBSCAN (default: 15)
 
     Returns:
         labels: (N,) cluster assignments
-        kmeans: fitted KMeans model
+        model: fitted clustering model
         embeddings_agg: (N, D) aggregated embeddings used for clustering
-        pca: fitted PCA model or None
+        reducer: fitted dimensionality reduction model or None
     """
     print(f"\nOriginal embeddings shape: {embeddings.shape}")
 
@@ -155,27 +172,59 @@ def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", pca_dim=50):
     else:
         embeddings_agg = embeddings
 
-    # PCA dimensionality reduction
-    if pca_dim and embeddings_agg.shape[1] > pca_dim:
-        print(f"\nReducing dimensionality with PCA to {pca_dim}...")
-        pca = PCA(n_components=pca_dim)
-        embeddings_agg = pca.fit_transform(embeddings_agg)
-        print(f"PCA explained variance: {pca.explained_variance_ratio_.sum():.2%}")
-    else:
-        pca = None
+    # Dimensionality reduction
+    reducer = None
+    if n_components and embeddings_agg.shape[1] > n_components:
+        if dim_reduction == "pca":
+            print(f"\nReducing dimensionality with PCA to {n_components}...")
+            reducer = PCA(n_components=n_components)
+            embeddings_agg = reducer.fit_transform(embeddings_agg)
+            print(f"PCA explained variance: {reducer.explained_variance_ratio_.sum():.2%}")
+        elif dim_reduction == "umap":
+            print(f"\nReducing dimensionality with UMAP to {n_components}...")
+            reducer = umap.UMAP(n_components=n_components, random_state=42, verbose=True)
+            embeddings_agg = reducer.fit_transform(embeddings_agg)
+            print(f"UMAP reduction complete: {embeddings_agg.shape}")
 
-    # K-means clustering
-    print(f"\nClustering into {n_clusters} clusters...")
-    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10, verbose=1)
-    labels = kmeans.fit_predict(embeddings_agg)
+    # Clustering
+    if algorithm == "kmeans":
+        print(f"\nClustering with K-Means into {n_clusters} clusters...")
+        model = KMeans(n_clusters=n_clusters, random_state=42, n_init=10, verbose=1)
+        labels = model.fit_predict(embeddings_agg)
+    
+    elif algorithm == "gmm":
+        print(f"\nClustering with Gaussian Mixture Model into {n_clusters} components...")
+        model = GaussianMixture(n_components=n_clusters, random_state=42, verbose=1, verbose_interval=10)
+        labels = model.fit_predict(embeddings_agg)
+        print(f"GMM converged: {model.converged_}")
+        print(f"GMM BIC: {model.bic(embeddings_agg):.2f}, AIC: {model.aic(embeddings_agg):.2f}")
+    
+    elif algorithm == "hdbscan":
+        print(f"\nClustering with HDBSCAN (min_cluster_size={min_cluster_size})...")
+        model = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size, min_samples=None, metric='euclidean', 
+                                cluster_selection_method='eom', prediction_data=True)
+        labels = model.fit_predict(embeddings_agg)
+        
+        # HDBSCAN uses -1 for noise points
+        n_noise = np.sum(labels == -1)
+        n_clusters_found = len(np.unique(labels[labels != -1]))
+        print(f"HDBSCAN found {n_clusters_found} clusters")
+        if n_noise > 0:
+            print(f"  Noise points: {n_noise} ({n_noise/len(labels)*100:.1f}%)")
+    
+    else:
+        raise ValueError(f"Unknown clustering algorithm: {algorithm}")
 
     # Print cluster distribution
     print("\nCluster distribution:")
     unique, counts = np.unique(labels, return_counts=True)
     for label, count in sorted(zip(unique, counts), key=lambda x: -x[1]):
-        print(f"  Cluster {label:2d}: {count:5d} samples ({count/len(labels)*100:5.1f}%)")
+        if label == -1:
+            print(f"  Noise   : {count:5d} samples ({count/len(labels)*100:5.1f}%)")
+        else:
+            print(f"  Cluster {label:2d}: {count:5d} samples ({count/len(labels)*100:5.1f}%)")
 
-    return labels, kmeans, embeddings_agg, pca
+    return labels, model, embeddings_agg, reducer
 
 
 def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000, cluster_verb_labels=None):
@@ -460,11 +509,7 @@ def save_clustered_hdf5(data, labels, cluster_verb_labels, save_path):
         f.attrs["n_clusters"] = len(cluster_verb_labels)
         f.attrs["embedding_dim"] = data["encoder_embeddings"].shape[-1]
 
-        # Store cluster labels as a root-level dataset
-        cluster_labels_ds = f.create_dataset("cluster_labels", data=labels)
-        cluster_labels_ds.attrs["description"] = "K-means cluster assignments for each sample"
-
-        # Store cluster verb labels mapping
+        # Store cluster verb labels mapping (one attribute per cluster)
         for cluster_id, verb_label in cluster_verb_labels.items():
             f.attrs[f"cluster_{cluster_id}_label"] = verb_label
 
@@ -598,6 +643,7 @@ def main():
             "cluster samples by verb labels."
         )
     )
+    # input: either data-dir or hdf5-file
     parser.add_argument(
         "--data-dir",
         default="clustering/outputs",
@@ -605,44 +651,55 @@ def main():
         help="Directory containing encoder_embeddings.npy, code_indices.npy, texts.txt, names.txt",
     )
     parser.add_argument(
+        "--hdf5-file",
+        default=None,
+        type=str,
+        help="Path to HDF5 embeddings file (e.g., embeddings_train.h5). If provided, will use this instead of numpy files.",
+    )
+    # output
+    parser.add_argument(
         "--save-dir",
         default="clustering/outputs",
         type=str,
         help="Directory to save clustering results (defaults to data-dir)",
     )
     parser.add_argument(
+        "--dim-reduction",
+        default="umpa",
+        choices=["pca", "umap", "none"],
+        help="Dimensionality reduction method: 'pca', 'umap', or 'none' (default: pca)",
+    )
+    parser.add_argument(
+        "--clustering-algorithm",
+        default="kmeans",
+        choices=["kmeans", "gmm", "hdbscan"],
+        help="Clustering algorithm: 'kmeans' (K-Means, default), 'gmm' (Gaussian Mixture Model), or 'hdbscan' (HDBSCAN)",
+    )
+
+    # optional arguments
+    parser.add_argument(
         "--n-clusters",
         default=20,
         type=int,
-        help="Number of clusters for K-means on encoder embeddings",
+        help="Number of clusters for K-means. Specify if you want to use a specific k, otherwise auto-selects k using elbow method with derivative.",
     )
     parser.add_argument(
-        "--hdf5-file",
-        default=None,
-        type=str,
-        help="Path to HDF5 embeddings file (e.g., embeddings_train.h5). If provided, will use this instead of numpy files.",
-    )
-    parser.add_argument(
-        "--elbow-method",
-        action="store_true",
-        help="Run elbow method to determine optimal number of clusters",
+        "--auto-k-method",
+        default="derivative",
+        choices=["silhouette", "derivative"],
+        help="Method to choose optimal k when auto-selecting: 'derivative' (elbow point, default) or 'silhouette' (best silhouette score)",
     )
     parser.add_argument(
         "--max-clusters",
         default=30,
         type=int,
-        help="Maximum number of clusters to test in elbow method (default: 30)",
+        help="Maximum number of clusters to test for elbow method (default: 30)",
     )
     parser.add_argument(
-        "--auto-k",
-        action="store_true",
-        help="Automatically use optimal k from elbow method (requires --elbow-method)",
-    )
-    parser.add_argument(
-        "--auto-k-method",
-        default="silhouette",
-        choices=["silhouette", "derivative"],
-        help="Method to choose optimal k: 'silhouette' (best silhouette score) or 'derivative' (elbow point)",
+        "--min-cluster-size",
+        default=15,
+        type=int,
+        help="Minimum cluster size for HDBSCAN (default: 15)",
     )
 
     args = parser.parse_args()
@@ -682,41 +739,62 @@ def main():
     print(f"  Number of texts: {len(texts)}")
     print(f"  Number of samples: {len(names)}")
 
-    # Run elbow method if requested
-    optimal_k = args.n_clusters
-    if args.elbow_method:
+    # Validate dimensionality reduction settings
+    dim_reduction_method = None if args.dim_reduction == "none" else args.dim_reduction
+
+    # Determine if we need to run elbow method for auto k-selection
+    # HDBSCAN doesn't need k, so skip elbow method for it
+    user_specified_k = args.n_clusters is not None
+    run_elbow = not user_specified_k and args.clustering_algorithm != "hdbscan"
+    
+    optimal_k = args.n_clusters  # Will be None if not specified
+    
+    if run_elbow:
         print("\n" + "=" * 80)
-        print("Running Elbow Method...")
+        print("Running Elbow Method to auto-select k...")
+        print(f"Testing k from 2 to 30")
         print("=" * 80)
         _, _, _, suggested_k, best_silhouette_k = elbow_method(
             encoder_embeddings,
             max_clusters=args.max_clusters,
-            aggregate="mean",
-            pca_dim=50,
+            aggregate="mean", # mean pooling over time dimension
+            dim_reduction=dim_reduction_method,
+            n_components=args.dim_reduction_dims,
             save_dir=args.save_dir,
         )
 
-        # Auto-select k if requested
-        if args.auto_k:
-            if args.auto_k_method == "silhouette" and best_silhouette_k is not None:
-                optimal_k = best_silhouette_k
-                print(f"\n>>> Auto-selecting k={optimal_k} based on silhouette score")
-            elif args.auto_k_method == "derivative":
-                optimal_k = suggested_k
-                print(f"\n>>> Auto-selecting k={optimal_k} based on elbow point")
-            else:
-                print(f"\n>>> Could not auto-select k, using default k={optimal_k}")
+        # Auto-select k based on method
+        if args.auto_k_method == "silhouette" and best_silhouette_k is not None:
+            optimal_k = best_silhouette_k
+            print(f"\n>>> Auto-selected k={optimal_k} based on silhouette score")
+        elif args.auto_k_method == "derivative" and suggested_k is not None:
+            optimal_k = suggested_k
+            print(f"\n>>> Auto-selected k={optimal_k} based on elbow point (derivative method)")
+        else:
+            optimal_k = 20  # Fallback default
+            print(f"\n>>> Could not auto-select k, using fallback k={optimal_k}")
+    else:
+        print(f"\n>>> Using user-specified k={optimal_k}")
 
-    # K-means clustering on encoder embeddings
+    # Clustering on encoder embeddings
     print("\n" + "=" * 80)
-    print(f"K-Means Clustering embeddings with k={optimal_k}...")
+    algo_name = {"kmeans": "K-Means", "gmm": "Gaussian Mixture Model", "hdbscan": "HDBSCAN"}[args.clustering_algorithm]
+    if args.clustering_algorithm == "hdbscan":
+        print(f"{algo_name} Clustering (min_cluster_size={args.min_cluster_size})...")
+    else:
+        print(f"{algo_name} Clustering embeddings with k={optimal_k}...")
+    if dim_reduction_method:
+        print(f"Using {dim_reduction_method.upper()} for dimensionality reduction to {args.dim_reduction_dims} dimensions")
     print("=" * 80)
 
-    labels, kmeans, embeddings_processed, _ = cluster_embeddings(
+    labels, model, embeddings_processed, _ = cluster_embeddings(
         encoder_embeddings,
-        n_clusters=optimal_k,
+        n_clusters=optimal_k if optimal_k else 20,  # Fallback for HDBSCAN (ignored anyway)
         aggregate="mean",
-        pca_dim=50,
+        dim_reduction=dim_reduction_method,
+        n_components=args.dim_reduction_dims,
+        algorithm=args.clustering_algorithm,
+        min_cluster_size=args.min_cluster_size,
     )
 
     # Save clustering results
