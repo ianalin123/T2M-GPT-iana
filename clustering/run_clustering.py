@@ -259,11 +259,32 @@ def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000,
     unique_labels = np.unique(labels_vis)
     n_clusters = len(unique_labels)
 
-    # Create color map
+    # Create a qualitative color palette with enough distinct colors
+    # For conference figures we want crisp, well-separated colors.
     if n_clusters <= 20:
-        cmap = plt.cm.get_cmap("tab20")
+        base_cmap = plt.cm.get_cmap("tab20", n_clusters)
     else:
-        cmap = plt.cm.get_cmap("tab20b")
+        # Combine several qualitative maps and then slice the number we need
+        qualitative_cmaps = [
+            plt.cm.get_cmap("tab20"),
+            plt.cm.get_cmap("tab20b"),
+            plt.cm.get_cmap("tab20c"),
+            plt.cm.get_cmap("Set3"),
+        ]
+        color_list = []
+        for cm in qualitative_cmaps:
+            color_list.extend(cm(np.linspace(0, 1, cm.N)))
+        base_cmap = None  # not used directly; we take colors from color_list
+        color_array = np.array(color_list)
+        # Ensure we have at least n_clusters colors
+        if len(color_array) < n_clusters:
+            repeats = int(np.ceil(n_clusters / len(color_array)))
+            color_array = np.tile(color_array, (repeats, 1))
+
+    # Map cluster IDs to sequential color indices so nearby numeric IDs do not
+    # accidentally share similar shades.
+    non_noise_labels = [cid for cid in unique_labels if cid != -1]
+    cluster_id_to_color_idx = {cid: idx for idx, cid in enumerate(non_noise_labels)}
 
     # Helper function to plot clusters
     def plot_clusters(embeddings_2d, xlabel, ylabel, title, save_path, labels_to_plot=None):
@@ -280,24 +301,61 @@ def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000,
                 cluster_label = verb if verb else "(no verb)"
             else:
                 cluster_label = f"Cluster {cluster_id}"
-            
+
+            # Choose a clearly distinct color for each cluster. Noise is rendered
+            # in neutral light gray so the semantic clusters stand out.
+            if cluster_id == -1:
+                point_color = (0.75, 0.75, 0.75, 1.0)
+            else:
+                color_idx = cluster_id_to_color_idx.get(cluster_id, 0)
+                if n_clusters <= 20:
+                    point_color = base_cmap(color_idx)
+                else:
+                    point_color = color_array[color_idx]
+
             ax.scatter(
                 embeddings_2d[mask, 0],
                 embeddings_2d[mask, 1],
-                c=[cmap(cluster_id / n_clusters)],
+                color=point_color,
                 label=cluster_label,
-                alpha=0.6,
-                s=10,
+                alpha=0.8,
+                s=20,
+                edgecolors="black",
+                linewidths=0.2,
             )
         
-        ax.set_xlabel(xlabel, fontsize=12)
-        ax.set_ylabel(ylabel, fontsize=12)
-        ax.set_title(title, fontsize=14, fontweight='bold')
+        ax.set_xlabel(xlabel, fontsize=14)
+        ax.set_ylabel(ylabel, fontsize=14)
+        ax.set_title(title, fontsize=16, fontweight="bold")
         
         if n_clusters <= 30:
-            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=1, fontsize=8)
+            legend = ax.legend(
+                loc="center left",
+                bbox_to_anchor=(1, 0.5),
+                ncol=1,
+                fontsize=12,
+                title="Cluster label",
+                title_fontsize=13,
+                frameon=False,
+            )
         else:
-            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), ncol=2, fontsize=6)
+            legend = ax.legend(
+                loc="center left",
+                bbox_to_anchor=(1, 0.5),
+                ncol=2,
+                fontsize=11,
+                title="Cluster label",
+                title_fontsize=12,
+                frameon=False,
+            )
+
+        # Slightly enlarge legend marker sizes for readability in print
+        if legend is not None:
+            for handle in legend.legendHandles:
+                try:
+                    handle.set_sizes([40.0])
+                except AttributeError:
+                    pass
         
         plt.tight_layout()
         os.makedirs(save_dir, exist_ok=True)
@@ -565,7 +623,7 @@ def save_clustered_hdf5(data, labels, cluster_verb_labels, save_path):
 def analyze_clusters(
     labels, texts, code_indices, save_dir, top_k=10, compound_verbs=None,
     cluster_verb_labels=None, cluster_atomic_verb_counts=None, cluster_compound_verb_counts=None,
-    algorithm="kmeans"
+    algorithm="kmeans", names=None
 ):
     """Analyze what each cluster represents."""
     
@@ -609,6 +667,25 @@ def analyze_clusters(
         noise_mask = labels == -1
         noise_texts = [texts[i] for i, m in enumerate(noise_mask) if m]
         noise_codes = code_indices[noise_mask]
+        noise_indices = [i for i, m in enumerate(noise_mask) if m]
+        
+        # Save noise samples to file
+        noise_samples_path = os.path.join(save_dir, "noise_samples.txt")
+        with open(noise_samples_path, "w") as f:
+            f.write(f"Noise Samples - {len(noise_texts)} samples\n")
+            f.write(f"{'='*80}\n")
+            f.write("These samples were not assigned to any cluster by HDBSCAN.\n")
+            f.write(f"{'='*80}\n\n")
+            
+            for idx, (sample_idx, text) in enumerate(zip(noise_indices, noise_texts), 1):
+                sample_name = names[sample_idx] if names and sample_idx < len(names) else f"sample_{sample_idx}"
+                compound_verb = compound_verbs[sample_idx] if compound_verbs and sample_idx < len(compound_verbs) else "N/A"
+                f.write(f"{idx}. Sample: {sample_name}\n")
+                f.write(f"   Text: {text}\n")
+                f.write(f"   Compound Verb: {compound_verb}\n")
+                f.write(f"\n")
+        
+        print(f"Saved {len(noise_texts)} noise samples to {noise_samples_path}")
         
         analysis = f"\n{'='*80}\n"
         analysis += (
@@ -729,12 +806,15 @@ def main():
     )
 
     # optional arguments
+    
+    # k-means
     parser.add_argument(
         "--n-clusters",
         default=None,
         type=int,
         help="Number of clusters for K-means. Specify if you want to use a specific k, otherwise auto-selects k using elbow method with derivative.",
     )
+    # auto-select k for k-means and gmm
     parser.add_argument(
         "--max-clusters",
         default=30,
@@ -747,6 +827,7 @@ def main():
         choices=["silhouette", "derivative"],
         help="Method to choose optimal k when auto-selecting: 'derivative' (elbow point, default) or 'silhouette' (best silhouette score)",
     )
+    # hdbscan
     parser.add_argument(
         "--min-cluster-size",
         default=15,
@@ -754,11 +835,38 @@ def main():
         help="Minimum cluster size for HDBSCAN (default: 15)",
     )
     parser.add_argument(
+        "--min-samples",
+        default=None,
+        type=int,
+        help="Minimum samples for HDBSCAN (default: None --> use min_cluster_size)",
+    )
+    parser.add_argument(
+        "--cluster-selection-epsilon",
+        default=0.5,
+        type=float,
+        help="Cluster selection epsilon for HDBSCAN (default: 0.5)",
+    )
+
+    # dimensionality reduction (both pca and umap)
+    parser.add_argument(
         "--dim-reduction-dims",
         default=50,
         type=int,
         help="Number of dimensions for dimensionality reduction (default: 50)",
     )
+
+    # umap
+    parser.add_argument('--umap-n-neighbors', default=15, type=int,
+                   help='UMAP n_neighbors parameter (default: 15)',
+                )
+    parser.add_argument('--umap-min-dist', default=0.1, type=float,
+                   help='UMAP min_dist parameter (default: 0.1)',
+                )
+    parser.add_argument('--umap-metric', default='euclidean', type=str,
+                   help='UMAP metric parameter',
+                )
+
+    # use quantized embeddings
     parser.add_argument(
         "--use-quantized",
         action="store_true",
@@ -914,6 +1022,7 @@ def main():
         cluster_atomic_verb_counts=cluster_atomic_verb_counts,
         cluster_compound_verb_counts=cluster_compound_verb_counts,
         algorithm=args.clustering_algorithm,
+        names=names,
     )
 
     # Save clustered HDF5 with cluster assignments and labels
