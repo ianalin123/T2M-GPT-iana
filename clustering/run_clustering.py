@@ -274,7 +274,7 @@ def visualize_clusters(
         "font.size": 12,
         "axes.labelsize": 14,
         "axes.titlesize": 16,
-        "axes.linewidth": 0.0,
+        "axes.linewidth": 1.0,
         "legend.fontsize": 12,
         "xtick.labelsize": 12,
         "ytick.labelsize": 12,
@@ -338,7 +338,7 @@ def visualize_clusters(
             ax.scatter(
                 embeddings_2d[mask, 0],
                 embeddings_2d[mask, 1],
-                s=10,
+                s=6,
                 color=point_color,
                 alpha=0.8,
                 rasterized=True,  # better PDF performance
@@ -366,12 +366,8 @@ def visualize_clusters(
 
         os.makedirs(save_dir, exist_ok=True)
         plt.savefig(save_path, dpi=300, bbox_inches="tight", metadata={'Creator': None})
-        # Save PDF for vector-quality paper figures
-        pdf_path = save_path.replace(".png", ".pdf")
-        plt.savefig(pdf_path, dpi=300, bbox_inches="tight", metadata={'Creator': None})
 
         print(f"Saved: {save_path}")
-        print(f"Saved vector PDF: {pdf_path}")
         plt.close()
 
     # --------------------------------------------------------
