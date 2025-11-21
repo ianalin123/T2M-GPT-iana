@@ -341,7 +341,6 @@ def visualize_clusters(
                 s=6,
                 color=point_color,
                 alpha=0.8,
-                rasterized=True,  # better PDF performance
                 label=cluster_label
             )
 
