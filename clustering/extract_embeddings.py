@@ -234,20 +234,21 @@ def extract_all_embeddings(net, dataloader, device="cuda", max_batches=None):
 
 def save_embeddings_hdf5(data, save_path, split="train", verb_labels_dict=None):
     """
-    Save embeddings and metadata to HDF5 file with hierarchical structure.
-
+    Save embeddings, raw motions, and metadata to HDF5 file with hierarchical structure.
+    
     Structure:
         /[file_id]/
             compound_verb (attribute)
-            majority_verb (attribute)
             text (attribute)
             length (attribute)
             encoder_embeddings (dataset)
             quantized_embeddings (dataset)
             code_indices (dataset)
-
+            motions (dataset)              # (T, 263) raw motion sequence
+    
     Args:
-        data: dict with encoder_embeddings, quantized_embeddings, code_indices, texts, names, etc.
+        data: dict with encoder_embeddings, quantized_embeddings, code_indices,
+              motions, texts, names, etc.
         save_path: Path to save HDF5 file
         split: Dataset split name (train/val/test)
         verb_labels_dict: dict mapping file_id to compound verb string (loaded from verbs.txt)
@@ -274,6 +275,8 @@ def save_embeddings_hdf5(data, save_path, split="train", verb_labels_dict=None):
         f.attrs["split"] = split
         f.attrs["n_samples"] = len(data["names"])
         f.attrs["embedding_dim"] = data["encoder_embeddings"].shape[-1]
+        if "motions" in data:
+            f.attrs["motion_dim"] = data["motions"].shape[-1]
 
         # Create a group for each sample
         for idx, name in enumerate(tqdm(data["names"], desc="Writing to HDF5")):
@@ -302,6 +305,15 @@ def save_embeddings_hdf5(data, save_path, split="train", verb_labels_dict=None):
                 compression="gzip",
                 compression_opts=4,
             )
+
+            # Add raw motions if available
+            if "motions" in data:
+                sample_group.create_dataset(
+                    "motions",
+                    data=data["motions"][idx],
+                    compression="gzip",
+                    compression_opts=4,
+                )
 
             # Add metadata as attributes
             sample_group.attrs["text"] = data["texts"][idx]

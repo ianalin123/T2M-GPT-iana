@@ -21,7 +21,8 @@ embeddings.h5
 │   └── [Datasets]
 │       ├── encoder_embeddings: (T', D) continuous pre-quantization embeddings
 │       ├── quantized_embeddings: (T', D) post-quantization embeddings
-│       └── code_indices: (T',) discrete codebook indices
+│       ├── code_indices: (T',) discrete codebook indices
+│       └── motions: (T, 263) raw motion sequence (same sequence as encoded)
 │
 ├── [file_id_2]/
 │   └── ...
@@ -76,7 +77,8 @@ embeddings_clustered.h5
 │ │
 │ └── [Datasets]
 │ ├── encoder_embeddings: (T', D) continuous pre-quantization embeddings
-│ └── code_indices: (T',) discrete codebook indices
+│ ├── code_indices: (T',) discrete codebook indices
+│ └── motions: (T, 263) raw motion sequence
 │
 ├── [file_id_2]/
 │ └── ...
