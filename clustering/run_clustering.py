@@ -764,7 +764,6 @@ def analyze_clusters(
     if algorithm == "hdbscan" and -1 in labels:
         noise_mask = labels == -1
         noise_texts = [texts[i] for i, m in enumerate(noise_mask) if m]
-        noise_codes = code_indices[noise_mask]
         noise_indices = [i for i, m in enumerate(noise_mask) if m]
         
         # Save noise samples to file
@@ -1006,74 +1005,80 @@ def main():
         print("Loading extracted embeddings and metadata...")
     print("=" * 80)
 
-    # Validate mutually exclusive options
-    if args.use_raw_motion and args.hdf5_file:
-        raise ValueError("--use-raw-motion cannot be used with --hdf5-file. Use --data-dir instead.")
+    # Validate incompatible options
     if args.use_raw_motion and args.use_quantized:
         raise ValueError("--use-raw-motion cannot be used with --use-quantized.")
 
-    # Load raw motion sequences
-    if args.use_raw_motion:
-        print("\n⚠️  Using raw motion sequences for clustering")
-        data = load_raw_motion_from_numpy(args.data_dir)
-        encoder_embeddings = data["motions"]  # (N, T, 263)
-        lengths = data["lengths"]
-        texts = data["texts"]
-        names = data["names"]
-        # Raw motion doesn't have code_indices or compound_verbs
-        code_indices = None
-        compound_verbs = None
-        
-        print(f"  Raw motions: {encoder_embeddings.shape}")
-        if lengths is not None:
-            print(f"  Sequence lengths: min={lengths.min()}, max={lengths.max()}, mean={lengths.mean():.1f}")
-        print(f"  Number of texts: {len(texts)}")
-        print(f"  Number of samples: {len(names)}")
-    
-    # Load from HDF5 or legacy numpy files
-    elif args.hdf5_file:
+    # Load from HDF5 or legacy numpy / raw-motion files
+    if args.hdf5_file:
         # Validate --use-quantized option
         if args.use_quantized:
             print("\n⚠️  Using quantized embeddings for clustering")
         
         # Load from HDF5
         data = load_data_from_hdf5(args.hdf5_file, use_quantized=args.use_quantized)
-        encoder_embeddings = data["encoder_embeddings"]
+        # Choose source for clustering: raw motions vs embeddings
+        if args.use_raw_motion and "motions" in data:
+            print("\n⚠️  Using raw motion sequences from HDF5 for clustering")
+            encoder_embeddings = data["motions"]  # (N, T, 263)
+            lengths = data.get("lengths", None)
+        else:
+            encoder_embeddings = data["encoder_embeddings"]
+            lengths = None  # lengths only defined for raw motion path
+
         code_indices = data["code_indices"]
         texts = data["texts"]
         names = data["names"]
         compound_verbs = data["compound_verbs"]
-        lengths = None  # HDF5 doesn't store lengths separately
         
-        print(f"  Encoder embeddings: {encoder_embeddings.shape}")
+        print(f"  Input for clustering: {encoder_embeddings.shape}")
+        if lengths is not None:
+            print(f"  Sequence lengths: min={lengths.min()}, max={lengths.max()}, mean={lengths.mean():.1f}")
         print(f"  Code indices: {code_indices.shape}")
         print(f"  Number of texts: {len(texts)}")
         print(f"  Number of samples: {len(names)}")
+
+    # Fallback: legacy NumPy input (embeddings and optional motions)
     else:
-        # Load from legacy numpy files
-        if args.use_quantized:
-            print("\n⚠️  WARNING: --use-quantized only works with --hdf5-file. Ignoring flag.")
-        
-        encoder_embeddings = np.load(os.path.join(args.data_dir, "encoder_embeddings.npy"))
-        code_indices = np.load(os.path.join(args.data_dir, "code_indices.npy"))
+        if args.use_raw_motion:
+            print("\n⚠️  Using raw motion sequences from NumPy for clustering")
+            data = load_raw_motion_from_numpy(args.data_dir)
+            encoder_embeddings = data["motions"]  # (N, T, 263)
+            lengths = data["lengths"]
+            texts = data["texts"]
+            names = data["names"]
+            code_indices = None
+            compound_verbs = None
 
-        with open(os.path.join(args.data_dir, "texts.txt"), "r") as f:
-            texts = f.read().strip().split("\n")
-        with open(os.path.join(args.data_dir, "names.txt"), "r") as f:
-            names = f.read().strip().split("\n")
+            print(f"  Raw motions: {encoder_embeddings.shape}")
+            if lengths is not None:
+                print(f"  Sequence lengths: min={lengths.min()}, max={lengths.max()}, mean={lengths.mean():.1f}")
+            print(f"  Number of texts: {len(texts)}")
+            print(f"  Number of samples: {len(names)}")
+        else:
+            # Legacy embeddings-only path
+            if args.use_quantized:
+                print("\n⚠️  WARNING: --use-quantized only works with --hdf5-file. Ignoring flag.")
+            
+            encoder_embeddings = np.load(os.path.join(args.data_dir, "encoder_embeddings.npy"))
+            code_indices = np.load(os.path.join(args.data_dir, "code_indices.npy"))
 
-        # No compound verbs available from legacy format
-        compound_verbs = None
-        lengths = None  # Try to load if available
-        lengths_path = os.path.join(args.data_dir, "lengths.npy")
-        if os.path.exists(lengths_path):
-            lengths = np.load(lengths_path)
-            print(f"  Loaded sequence lengths: {lengths.shape}")
+            with open(os.path.join(args.data_dir, "texts.txt"), "r") as f:
+                texts = f.read().strip().split("\n")
+            with open(os.path.join(args.data_dir, "names.txt"), "r") as f:
+                names = f.read().strip().split("\n")
 
-        print(f"  Encoder embeddings: {encoder_embeddings.shape}")
-        print(f"  Code indices: {code_indices.shape}")
-        print(f"  Number of texts: {len(texts)}")
-        print(f"  Number of samples: {len(names)}")
+            compound_verbs = None
+            lengths = None
+            lengths_path = os.path.join(args.data_dir, "lengths.npy")
+            if os.path.exists(lengths_path):
+                lengths = np.load(lengths_path)
+                print(f"  Loaded sequence lengths: {lengths.shape}")
+
+            print(f"  Encoder embeddings: {encoder_embeddings.shape}")
+            print(f"  Code indices: {code_indices.shape}")
+            print(f"  Number of texts: {len(texts)}")
+            print(f"  Number of samples: {len(names)}")
 
     # Validate dimensionality reduction settings
     dim_reduction_method = None if args.dim_reduction == "none" else args.dim_reduction
