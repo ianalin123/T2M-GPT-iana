@@ -256,7 +256,19 @@ def visualize_clusters(
     # --------------------------------------------------------
     # Global plotting style for publication-quality output
     # --------------------------------------------------------
-    plt.style.use("seaborn-v0_8-whitegrid")
+    style_options = ["seaborn-v0_8-whitegrid", "seaborn-whitegrid", "seaborn"]
+    style_set = False
+    for style_name in style_options:
+        try:
+            plt.style.use(style_name)
+            style_set = True
+            break
+        except OSError:
+            continue
+    
+    if not style_set:
+        # Fallback to default style if seaborn styles aren't available
+        plt.style.use("default")
     plt.rcParams.update({
         "font.family": "sans-serif",
         "font.size": 12,
@@ -422,41 +434,6 @@ def visualize_clusters(
         os.path.join(save_dir, "clusters_tsne.png"),
         labels_to_plot=labels_tsne,
     )
-
-    # # --------------------------------------------------------
-    # # PCA Scree plot
-    # # --------------------------------------------------------
-    # print("\nComputing PCA variance analysis...")
-    # pca_full = PCA(n_components=min(50, embeddings_vis.shape[1]))
-    # pca_full.fit(embeddings_vis)
-
-    # fig, ax = plt.subplots(figsize=(10, 4))
-    # ax.plot(
-    #     range(1, len(pca_full.explained_variance_ratio_) + 1),
-    #     pca_full.explained_variance_ratio_,
-    #     marker="o"
-    # )
-    # ax.set_xlabel("Principal Component")
-    # ax.set_ylabel("Explained Variance Ratio")
-    # ax.set_title("PCA Scree Plot")
-    # ax.grid(alpha=0.3)
-
-    # plt.tight_layout()
-    # plt.savefig(
-    #     os.path.join(save_dir, "pca_variance.png"),
-    #     dpi=300,
-    #     bbox_inches="tight",
-    #     metadata={'Creator': None}
-    # )
-    # plt.savefig(
-    #     os.path.join(save_dir, "pca_variance.pdf"),
-    #     dpi=300,
-    #     bbox_inches="tight",
-    #     metadata={'Creator': None}
-    # )
-    # plt.close()
-
-    # print("Saved PCA variance plot.")
 
 
 def load_data_from_hdf5(hdf5_path, use_quantized=False):
@@ -882,6 +859,12 @@ def main():
         default=0.5,
         type=float,
         help="Cluster selection epsilon for HDBSCAN (default: 0.5)",
+    )
+    parser.add_argument(
+        "--cluster-selection-method",
+        default="eom",
+        choices=["eom", "leaf", "dbscan"],
+        help="Cluster selection method for HDBSCAN: 'eom' (default), 'leaf', or 'dbscan'",
     )
 
     args = parser.parse_args()
