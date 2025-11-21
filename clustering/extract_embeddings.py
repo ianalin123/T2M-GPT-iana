@@ -465,6 +465,7 @@ def main():
     )
     np.save(os.path.join(args.save_dir, "code_indices.npy"), data["code_indices"])
     np.save(os.path.join(args.save_dir, "lengths.npy"), data["lengths"])
+    np.save(os.path.join(args.save_dir, "motions.npy"), data["motions"])
     with open(os.path.join(args.save_dir, "texts.txt"), "w") as f:
         f.write("\n".join(data["texts"]))
     with open(os.path.join(args.save_dir, "names.txt"), "w") as f:

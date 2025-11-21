@@ -31,12 +31,12 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 
-def elbow_method(embeddings, max_clusters=30, aggregate="mean", dim_reduction="pca", n_components=50, save_dir=None):
+def elbow_method(embeddings, max_clusters=30, aggregate="mean", dim_reduction="pca", n_components=50, save_dir=None, lengths=None):
     """
     Apply the elbow method to determine optimal number of clusters.
 
     Args:
-        embeddings: (N, T', D) array of encoder embeddings
+        embeddings: (N, T', D) array of encoder embeddings or (N, T, 263) raw motion sequences
         max_clusters: maximum number of clusters to test
         aggregate: 'mean', 'max', 'flatten', or None
         dim_reduction: 'pca', 'umap', or None
@@ -52,18 +52,40 @@ def elbow_method(embeddings, max_clusters=30, aggregate="mean", dim_reduction="p
     """
     print(f"\nOriginal embeddings shape: {embeddings.shape}")
 
-    # Aggregate over time dimension
-    if aggregate == "mean":
-        embeddings_agg = embeddings.mean(axis=1)  # (N, D)
-        print(f"Aggregated with mean pooling: {embeddings_agg.shape}")
-    elif aggregate == "max":
-        embeddings_agg = embeddings.max(axis=1)
-        print(f"Aggregated with max pooling: {embeddings_agg.shape}")
-    elif aggregate == "flatten":
-        embeddings_agg = embeddings.reshape(embeddings.shape[0], -1)
-        print(f"Flattened: {embeddings_agg.shape}")
+    # Handle variable-length sequences if lengths are provided
+    if lengths is not None:
+        # Mask out padding for proper aggregation
+        max_len = embeddings.shape[1]
+        mask = np.arange(max_len)[None, :] < lengths[:, None]  # (N, T)
+        mask = mask[:, :, None]  # (N, T, 1) for broadcasting
+        
+        if aggregate == "mean":
+            masked_embeddings = embeddings * mask
+            embeddings_agg = masked_embeddings.sum(axis=1) / lengths[:, None]  # (N, D)
+            print(f"Aggregated with mean pooling (masked): {embeddings_agg.shape}")
+        elif aggregate == "max":
+            masked_embeddings = embeddings.copy()
+            masked_embeddings[~mask.squeeze(-1)] = -np.inf
+            embeddings_agg = masked_embeddings.max(axis=1)
+            print(f"Aggregated with max pooling (masked): {embeddings_agg.shape}")
+        elif aggregate == "flatten":
+            embeddings_agg = embeddings.reshape(embeddings.shape[0], -1)
+            print(f"Flattened (with padding): {embeddings_agg.shape}")
+        else:
+            embeddings_agg = embeddings
     else:
-        embeddings_agg = embeddings
+        # All sequences have same length
+        if aggregate == "mean":
+            embeddings_agg = embeddings.mean(axis=1)  # (N, D)
+            print(f"Aggregated with mean pooling: {embeddings_agg.shape}")
+        elif aggregate == "max":
+            embeddings_agg = embeddings.max(axis=1)
+            print(f"Aggregated with max pooling: {embeddings_agg.shape}")
+        elif aggregate == "flatten":
+            embeddings_agg = embeddings.reshape(embeddings.shape[0], -1)
+            print(f"Flattened: {embeddings_agg.shape}")
+        else:
+            embeddings_agg = embeddings
 
     # Dimensionality reduction
     if n_components and embeddings_agg.shape[1] > n_components:
@@ -147,12 +169,12 @@ def elbow_method(embeddings, max_clusters=30, aggregate="mean", dim_reduction="p
     return inertias, silhouette_scores, k_range, suggested_k, best_silhouette_k
 
 
-def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", dim_reduction="pca", n_components=50, algorithm="kmeans", min_cluster_size=15):
+def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", dim_reduction="pca", n_components=50, algorithm="kmeans", min_cluster_size=15, lengths=None):
     """
-    Cluster the continuous encoder embeddings using various algorithms.
+    Cluster the continuous encoder embeddings or raw motion sequences using various algorithms.
 
     Args:
-        embeddings: (N, T', D) array of encoder embeddings
+        embeddings: (N, T', D) array of encoder embeddings or (N, T, 263) raw motion sequences
         n_clusters: number of clusters (ignored for HDBSCAN)
         aggregate: 'mean', 'max', 'flatten', or None
         dim_reduction: 'pca', 'umap', or None
@@ -168,18 +190,46 @@ def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", dim_reductio
     """
     print(f"\nOriginal embeddings shape: {embeddings.shape}")
 
-    # Aggregate over time dimension
-    if aggregate == "mean":
-        embeddings_agg = embeddings.mean(axis=1)  # (N, D)
-        print(f"Aggregated with mean pooling: {embeddings_agg.shape}")
-    elif aggregate == "max":
-        embeddings_agg = embeddings.max(axis=1)
-        print(f"Aggregated with max pooling: {embeddings_agg.shape}")
-    elif aggregate == "flatten":
-        embeddings_agg = embeddings.reshape(embeddings.shape[0], -1)
-        print(f"Flattened: {embeddings_agg.shape}")
+    # Handle variable-length sequences if lengths are provided
+    if lengths is not None:
+        # Mask out padding for proper aggregation
+        # Create a mask: True for valid timesteps, False for padding
+        max_len = embeddings.shape[1]
+        mask = np.arange(max_len)[None, :] < lengths[:, None]  # (N, T)
+        mask = mask[:, :, None]  # (N, T, 1) for broadcasting
+        
+        # Aggregate over time dimension with masking
+        if aggregate == "mean":
+            # Sum valid timesteps and divide by actual length
+            masked_embeddings = embeddings * mask
+            embeddings_agg = masked_embeddings.sum(axis=1) / lengths[:, None]  # (N, D)
+            print(f"Aggregated with mean pooling (masked): {embeddings_agg.shape}")
+        elif aggregate == "max":
+            # Set padding to -inf before max pooling
+            masked_embeddings = embeddings.copy()
+            masked_embeddings[~mask.squeeze(-1)] = -np.inf
+            embeddings_agg = masked_embeddings.max(axis=1)
+            print(f"Aggregated with max pooling (masked): {embeddings_agg.shape}")
+        elif aggregate == "flatten":
+            # Flatten but only use valid timesteps
+            # For variable lengths, we need to pad to max length or use a fixed-size representation
+            embeddings_agg = embeddings.reshape(embeddings.shape[0], -1)
+            print(f"Flattened (with padding): {embeddings_agg.shape}")
+        else:
+            embeddings_agg = embeddings
     else:
-        embeddings_agg = embeddings
+        # All sequences have same length (or we assume they do)
+        if aggregate == "mean":
+            embeddings_agg = embeddings.mean(axis=1)  # (N, D)
+            print(f"Aggregated with mean pooling: {embeddings_agg.shape}")
+        elif aggregate == "max":
+            embeddings_agg = embeddings.max(axis=1)
+            print(f"Aggregated with max pooling: {embeddings_agg.shape}")
+        elif aggregate == "flatten":
+            embeddings_agg = embeddings.reshape(embeddings.shape[0], -1)
+            print(f"Flattened: {embeddings_agg.shape}")
+        else:
+            embeddings_agg = embeddings
 
     # Dimensionality reduction
     reducer = None
@@ -435,6 +485,68 @@ def visualize_clusters(
     )
 
 
+def load_raw_motion_from_numpy(data_dir):
+    """
+    Load raw motion sequences from numpy files.
+    
+    Args:
+        data_dir: Directory containing motions.npy, texts.txt, names.txt, and optionally lengths.npy
+    
+    Returns:
+        dict with:
+            - motions: (N, T, 263) numpy array of raw motion sequences
+            - texts: list of text descriptions
+            - names: list of sample IDs
+            - lengths: (N,) numpy array of actual sequence lengths (if available)
+    """
+    print(f"Loading raw motion data from {data_dir}")
+    
+    motions_path = os.path.join(data_dir, "motions.npy")
+    if not os.path.exists(motions_path):
+        raise FileNotFoundError(f"motions.npy not found in {data_dir}")
+    
+    motions = np.load(motions_path)
+    print(f"  Loaded motions: {motions.shape}")
+    
+    # Load metadata
+    texts_path = os.path.join(data_dir, "texts.txt")
+    names_path = os.path.join(data_dir, "names.txt")
+    lengths_path = os.path.join(data_dir, "lengths.npy")
+    
+    if not os.path.exists(texts_path):
+        raise FileNotFoundError(f"texts.txt not found in {data_dir}")
+    if not os.path.exists(names_path):
+        raise FileNotFoundError(f"names.txt not found in {data_dir}")
+    
+    with open(texts_path, "r") as f:
+        texts = f.read().strip().split("\n")
+    with open(names_path, "r") as f:
+        names = f.read().strip().split("\n")
+    
+    lengths = None
+    if os.path.exists(lengths_path):
+        lengths = np.load(lengths_path)
+        print(f"  Loaded lengths: {lengths.shape}")
+        print(f"  Sequence length range: {lengths.min()} - {lengths.max()}")
+    else:
+        print(f"  Warning: lengths.npy not found. Assuming all sequences have same length.")
+    
+    # Validate dimensions
+    if len(texts) != len(motions):
+        raise ValueError(f"Mismatch: {len(texts)} texts but {len(motions)} motion sequences")
+    if len(names) != len(motions):
+        raise ValueError(f"Mismatch: {len(names)} names but {len(motions)} motion sequences")
+    if lengths is not None and len(lengths) != len(motions):
+        raise ValueError(f"Mismatch: {len(lengths)} lengths but {len(motions)} motion sequences")
+    
+    return {
+        "motions": motions,
+        "texts": texts,
+        "names": names,
+        "lengths": lengths,
+    }
+
+
 def load_data_from_hdf5(hdf5_path, use_quantized=False):
     """
     Load embeddings and metadata from HDF5 file.
@@ -686,7 +798,6 @@ def analyze_clusters(
     for cluster_id in cluster_ids:
         mask = labels == cluster_id
         cluster_texts = [texts[i] for i, m in enumerate(mask) if m]
-        cluster_codes = code_indices[mask]
 
         # Get cluster label
         cluster_label = ""
@@ -705,24 +816,28 @@ def analyze_clusters(
         for i, text in enumerate(cluster_texts[:top_k]):
             analysis += f"  {i+1}. {text}\n"
 
-        # Most common discrete codes used
-        all_codes = cluster_codes.flatten()
-        unique_codes, counts = np.unique(all_codes, return_counts=True)
-        top_code_indices = np.argsort(-counts)[:10]
+        # Most common discrete codes used (only if code_indices available)
+        if code_indices is not None:
+            cluster_codes = code_indices[mask]
+            all_codes = cluster_codes.flatten()
+            unique_codes, counts = np.unique(all_codes, return_counts=True)
+            top_code_indices = np.argsort(-counts)[:10]
 
-        analysis += "\nMost frequently used codebook entries:\n"
-        for idx in top_code_indices:
-            code = unique_codes[idx]
-            count = counts[idx]
+            analysis += "\nMost frequently used codebook entries:\n"
+            for idx in top_code_indices:
+                code = unique_codes[idx]
+                count = counts[idx]
+                analysis += (
+                    f"  Code {code:3d}: used {count:5d} times "
+                    f"({count/len(all_codes)*100:.1f}%)\n"
+                )
+
             analysis += (
-                f"  Code {code:3d}: used {count:5d} times "
-                f"({count/len(all_codes)*100:.1f}%)\n"
+                f"\nCodebook diversity: {len(unique_codes)}/{code_indices.max()+1} "
+                "codes used\n"
             )
-
-        analysis += (
-            f"\nCodebook diversity: {len(unique_codes)}/{code_indices.max()+1} "
-            "codes used\n"
-        )
+        else:
+            analysis += "\n(Codebook analysis not available for raw motion data)\n"
 
         # Atomic verb distribution in this cluster
         if cluster_atomic_verb_counts is not None:
@@ -792,12 +907,24 @@ def main():
     )
 
     ### optional arguments
+    parser.add_argument(
+        "--aggregate",
+        default="mean",
+        choices=["mean", "max", "flatten", "none"],
+        help="Aggregate method for embeddings: 'mean' (default), 'max', 'flatten', or 'none'",
+    )
     
     # use quantized embeddings
     parser.add_argument(
         "--use-quantized",
         action="store_true",
         help="Use quantized embeddings instead of encoder embeddings for clustering (only works with --hdf5-file)",
+    )
+    # use raw motion sequences
+    parser.add_argument(
+        "--use-raw-motion",
+        action="store_true",
+        help="Use raw motion sequences instead of embeddings for clustering (loads from motions.npy in data-dir)",
     )
 
 
@@ -873,11 +1000,38 @@ def main():
 
     # Load extracted data
     print("=" * 80)
-    print("Loading extracted embeddings and metadata...")
+    if args.use_raw_motion:
+        print("Loading raw motion sequences and metadata...")
+    else:
+        print("Loading extracted embeddings and metadata...")
     print("=" * 80)
 
+    # Validate mutually exclusive options
+    if args.use_raw_motion and args.hdf5_file:
+        raise ValueError("--use-raw-motion cannot be used with --hdf5-file. Use --data-dir instead.")
+    if args.use_raw_motion and args.use_quantized:
+        raise ValueError("--use-raw-motion cannot be used with --use-quantized.")
+
+    # Load raw motion sequences
+    if args.use_raw_motion:
+        print("\n⚠️  Using raw motion sequences for clustering")
+        data = load_raw_motion_from_numpy(args.data_dir)
+        encoder_embeddings = data["motions"]  # (N, T, 263)
+        lengths = data["lengths"]
+        texts = data["texts"]
+        names = data["names"]
+        # Raw motion doesn't have code_indices or compound_verbs
+        code_indices = None
+        compound_verbs = None
+        
+        print(f"  Raw motions: {encoder_embeddings.shape}")
+        if lengths is not None:
+            print(f"  Sequence lengths: min={lengths.min()}, max={lengths.max()}, mean={lengths.mean():.1f}")
+        print(f"  Number of texts: {len(texts)}")
+        print(f"  Number of samples: {len(names)}")
+    
     # Load from HDF5 or legacy numpy files
-    if args.hdf5_file:
+    elif args.hdf5_file:
         # Validate --use-quantized option
         if args.use_quantized:
             print("\n⚠️  Using quantized embeddings for clustering")
@@ -889,6 +1043,12 @@ def main():
         texts = data["texts"]
         names = data["names"]
         compound_verbs = data["compound_verbs"]
+        lengths = None  # HDF5 doesn't store lengths separately
+        
+        print(f"  Encoder embeddings: {encoder_embeddings.shape}")
+        print(f"  Code indices: {code_indices.shape}")
+        print(f"  Number of texts: {len(texts)}")
+        print(f"  Number of samples: {len(names)}")
     else:
         # Load from legacy numpy files
         if args.use_quantized:
@@ -904,11 +1064,16 @@ def main():
 
         # No compound verbs available from legacy format
         compound_verbs = None
+        lengths = None  # Try to load if available
+        lengths_path = os.path.join(args.data_dir, "lengths.npy")
+        if os.path.exists(lengths_path):
+            lengths = np.load(lengths_path)
+            print(f"  Loaded sequence lengths: {lengths.shape}")
 
-    print(f"  Encoder embeddings: {encoder_embeddings.shape}")
-    print(f"  Code indices: {code_indices.shape}")
-    print(f"  Number of texts: {len(texts)}")
-    print(f"  Number of samples: {len(names)}")
+        print(f"  Encoder embeddings: {encoder_embeddings.shape}")
+        print(f"  Code indices: {code_indices.shape}")
+        print(f"  Number of texts: {len(texts)}")
+        print(f"  Number of samples: {len(names)}")
 
     # Validate dimensionality reduction settings
     dim_reduction_method = None if args.dim_reduction == "none" else args.dim_reduction
@@ -932,6 +1097,7 @@ def main():
             dim_reduction=dim_reduction_method,
             n_components=args.dim_reduction_dims,
             save_dir=args.save_dir,
+            lengths=lengths,
         )
 
         # Auto-select k based on method
@@ -947,13 +1113,14 @@ def main():
     else:
         print(f"\n>>> Using user-specified k={optimal_k}")
 
-    # Clustering on encoder embeddings
+    # Clustering on encoder embeddings or raw motion
     print("\n" + "=" * 80)
     algo_name = {"kmeans": "K-Means", "gmm": "Gaussian Mixture Model", "hdbscan": "HDBSCAN"}[args.clustering_algorithm]
+    data_type = "raw motion sequences" if args.use_raw_motion else "embeddings"
     if args.clustering_algorithm == "hdbscan":
-        print(f"{algo_name} Clustering (min_cluster_size={args.min_cluster_size})...")
+        print(f"{algo_name} Clustering {data_type} (min_cluster_size={args.min_cluster_size})...")
     else:
-        print(f"{algo_name} Clustering embeddings with k={optimal_k}...")
+        print(f"{algo_name} Clustering {data_type} with k={optimal_k}...")
     if dim_reduction_method:
         print(f"Using {dim_reduction_method.upper()} for dimensionality reduction to {args.dim_reduction_dims} dimensions")
     print("=" * 80)
@@ -961,11 +1128,12 @@ def main():
     labels, model, embeddings_processed, _ = cluster_embeddings(
         encoder_embeddings,
         n_clusters=optimal_k if optimal_k else 20,  # Fallback for HDBSCAN (ignored anyway)
-        aggregate="mean",
+        aggregate=args.aggregate,
         dim_reduction=dim_reduction_method,
         n_components=args.dim_reduction_dims,
         algorithm=args.clustering_algorithm,
         min_cluster_size=args.min_cluster_size,
+        lengths=lengths,
     )
 
     # Save clustering results
@@ -1017,6 +1185,8 @@ def main():
         algorithm=args.clustering_algorithm,
         names=names,
     )
+    
+    # Note: code_indices may be None for raw motion, but analyze_clusters handles it
 
     # Save clustered HDF5 with cluster assignments and labels
     if args.hdf5_file:
@@ -1043,7 +1213,8 @@ def main():
     print(f"  - cluster_labels.npy: {algo_name} cluster assignments (N,)")
     if cluster_verb_labels:
         print("  - cluster_verb_labels.txt: atomic verb label for each cluster")
-    print("  - embeddings_processed.npy: processed embeddings used for clustering")
+    data_type_desc = "processed motion/embeddings" if args.use_raw_motion else "processed embeddings"
+    print(f"  - embeddings_processed.npy: {data_type_desc} used for clustering")
     print("  - clusters_pca.png: PCA visualization with atomic verb labels")
     if dim_reduction_method == "umap":
         print("  - clusters_umap.png: UMAP visualization with atomic verb labels")
