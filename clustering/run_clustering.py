@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
 from sklearn.mixture import GaussianMixture
 from tqdm import tqdm
 import seaborn as sns
@@ -253,14 +252,6 @@ def visualize_clusters(
     cluster_verb_labels=None,
     dim_reduction_method=None
 ):
-    # ---- Sampling ----
-    if len(embeddings) > max_samples:
-        idx = np.random.choice(len(embeddings), max_samples, replace=False)
-        embeddings_vis = embeddings[idx]
-        labels_vis = labels[idx]
-    else:
-        embeddings_vis = embeddings
-        labels_vis = labels
 
     # --------------------------------------------------------
     # Global plotting style for publication-quality output
@@ -280,143 +271,172 @@ def visualize_clusters(
         plt.style.use("default")
     plt.rcParams.update({
         "font.family": "sans-serif",
-        "font.size": 13,
-        "axes.labelsize": 15,
-        "axes.titlesize": 17,
-        "axes.linewidth": 1.0,
+        "font.size": 12,
+        "axes.labelsize": 14,
+        "axes.titlesize": 16,
+        "axes.linewidth": 0.0,
+        "legend.fontsize": 12,
         "xtick.labelsize": 12,
         "ytick.labelsize": 12,
-        "legend.fontsize": 14,
-        "figure.dpi": 300,
+        "figure.dpi": 300
     })
 
-    os.makedirs(save_dir, exist_ok=True)
+    # --------------------------------------------------------
+    # Subsample if needed
+    # --------------------------------------------------------
+    if len(embeddings) > max_samples:
+        print(f"\nSubsampling {max_samples} points for visualization...")
+        idx = np.random.choice(len(embeddings), max_samples, replace=False)
+        embeddings_vis = embeddings[idx]
+        labels_vis = labels[idx]
+    else:
+        embeddings_vis = embeddings
+        labels_vis = labels
 
-    # ---- Color palette ----
-    unique_clusters = np.unique(labels_vis)
-    non_noise = unique_clusters[unique_clusters != -1]
-    n_clusters = len(non_noise)
+    unique_labels = np.unique(labels_vis)
+    n_clusters = len(unique_labels)
 
-    # HUSL palette (great separation for up to ~50 categories)
-    palette = sns.color_palette("husl", n_clusters)
-    cluster_to_color = {cid: palette[i] for i, cid in enumerate(non_noise)}
+    # --------------------------------------------------------
+    # Strong, perceptually uniform color palette (HUSL)
+    # Works great for <= 30 clusters
+    # --------------------------------------------------------
+    non_noise_labels = [cid for cid in unique_labels if cid != -1]
+    colors = sns.color_palette("husl", len(non_noise_labels))
+    cluster_id_to_color_idx = {
+        cid: i for i, cid in enumerate(non_noise_labels)
+    }
 
-    # Noise color
-    noise_color = (0.75, 0.75, 0.75)
+    # --------------------------------------------------------
+    # Reusable plotting function
+    # --------------------------------------------------------
+    def plot_clusters(embeddings_2d, xlabel, ylabel, title, save_path, labels_to_plot=None):
+        if labels_to_plot is None:
+            labels_to_plot = labels_vis
 
-    # ---- Plot helper ----
-    def plot_clusters(pts2d, title, xlabel, ylabel, save_name, labels_for_plot):
-        fig, ax = plt.subplots(figsize=(10, 8))  # optimal aspect for papers
+        fig, ax = plt.subplots(figsize=(10, 8))
 
-        unique_plot = np.unique(labels_for_plot)
+        unique_plot_labels = np.unique(labels_to_plot)
 
-        for cid in unique_plot:
-            mask = labels_for_plot == cid
+        for cid in unique_plot_labels:
+            mask = labels_to_plot == cid
+
             if cid == -1:
-                color = noise_color
-                label = "Noise"
+                cluster_label = "Noise"
+                point_color = (0.75, 0.75, 0.75)
             else:
-                color = cluster_to_color[cid]
+                # Verb label if provided
                 if cluster_verb_labels and cid in cluster_verb_labels:
-                    label = cluster_verb_labels[cid] or f"Cluster {cid}"
+                    v = cluster_verb_labels[cid]
+                    cluster_label = v if v else f"Cluster {cid}"
                 else:
-                    label = f"Cluster {cid}"
+                    cluster_label = f"Cluster {cid}"
 
+                color_idx = cluster_id_to_color_idx.get(cid, 0)
+                point_color = colors[color_idx]
+
+            # Clean, high-quality scatter
             ax.scatter(
-                pts2d[mask, 0],
-                pts2d[mask, 1],
-                s=18,
-                color=color,
-                alpha=0.70,
-                rasterized=True,
-                label=label,
+                embeddings_2d[mask, 0],
+                embeddings_2d[mask, 1],
+                s=10,
+                color=point_color,
+                alpha=0.8,
+                rasterized=True,  # better PDF performance
+                label=cluster_label
             )
 
-        # Remove ticks & grid lines
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_title(title, pad=12)    # Remove ticks & grid lines
         ax.set_xticks([])
         ax.set_yticks([])
         ax.grid(False)
 
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.set_title(title, pad=10)
-
-        # Large legend outside
-        legend = ax.legend(
+        # Legend outside figure
+        ax.legend(
             loc="center left",
             bbox_to_anchor=(1.02, 0.5),
             frameon=False,
             title="Clusters",
-            title_fontsize=15,
+            title_fontsize=13
         )
 
-        # Make legend marker sizes large
-        for handle in legend.legendHandles:
-            try:
-                handle.set_sizes([80])
-            except AttributeError:
-                pass
-
+        ax.margins(0.05)
         plt.tight_layout()
-        fig.savefig(os.path.join(save_dir, save_name), dpi=300, bbox_inches="tight")
+
+        os.makedirs(save_dir, exist_ok=True)
+        plt.savefig(save_path, dpi=300, bbox_inches="tight", metadata={'Creator': None})
+        # Save PDF for vector-quality paper figures
+        pdf_path = save_path.replace(".png", ".pdf")
+        plt.savefig(pdf_path, dpi=300, bbox_inches="tight", metadata={'Creator': None})
+
+        print(f"Saved: {save_path}")
+        print(f"Saved vector PDF: {pdf_path}")
         plt.close()
 
-    # ---- PCA ----
-    print("Computing PCA...")
+    # --------------------------------------------------------
+    # PCA 2D
+    # --------------------------------------------------------
+    print("\nComputing PCA for visualization...")
     pca = PCA(n_components=2)
-    pca_2d = pca.fit_transform(embeddings_vis)
+    emb_pca = pca.fit_transform(embeddings_vis)
 
     plot_clusters(
-        pca_2d,
-        title="PCA (2D Projection)",
-        xlabel="PC1",
-        ylabel="PC2",
-        save_name="clusters_pca.png",
-        labels_for_plot=labels_vis,
+        emb_pca,
+        f"PC1 ({pca.explained_variance_ratio_[0]:.1%} variance)",
+        f"PC2 ({pca.explained_variance_ratio_[1]:.1%} variance)",
+        "PCA (2D Projection)",
+        os.path.join(save_dir, "clusters_pca.png"),
     )
 
-    # ---- UMAP ----
+    # --------------------------------------------------------
+    # UMAP (if embeddings already reduced)
+    # --------------------------------------------------------
     if dim_reduction_method == "umap" and embeddings_vis.shape[1] >= 2:
-        umap2d = embeddings_vis[:, :2]
+        print("\nUsing 2D UMAP embeddings for visualization...")
+        emb_umap = embeddings_vis[:, :2]
+
         plot_clusters(
-            umap2d,
-            title="UMAP (2D Projection)",
-            xlabel="UMAP1",
-            ylabel="UMAP2",
-            save_name="clusters_umap.png",
-            labels_for_plot=labels_vis,
+            emb_umap,
+            "UMAP-1",
+            "UMAP-2",
+            "UMAP (2D Projection)",
+            os.path.join(save_dir, "clusters_umap.png"),
         )
 
-    # ---- t-SNE ----
-    print("Computing t-SNE...")
-    max_tsne = min(10000, len(embeddings_vis))
-    if len(embeddings_vis) > max_tsne:
-        idx2 = np.random.choice(len(embeddings_vis), max_tsne, replace=False)
-        tsne_input = embeddings_vis[idx2]
-        tsne_labels = labels_vis[idx2]
+    # --------------------------------------------------------
+    # t-SNE (limited sample)
+    # --------------------------------------------------------
+    print("\nComputing t-SNE for visualization...")
+    from sklearn.manifold import TSNE
+
+    max_tsne_samples = min(10000, len(embeddings_vis))
+    if len(embeddings_vis) > max_tsne_samples:
+        print(f"  Subsampling to {max_tsne_samples} points for t-SNE...")
+        idx_tsne = np.random.choice(len(embeddings_vis), max_tsne_samples, replace=False)
+        emb_input_tsne = embeddings_vis[idx_tsne]
+        labels_tsne = labels_vis[idx_tsne]
     else:
-        tsne_input = embeddings_vis
-        tsne_labels = labels_vis
+        emb_input_tsne = embeddings_vis
+        labels_tsne = labels_vis
 
     tsne = TSNE(
         n_components=2,
+        random_state=42,
         perplexity=30,
         n_iter=1000,
-        random_state=42,
-        verbose=1,
+        verbose=1
     )
-    tsne_2d = tsne.fit_transform(tsne_input)
+    emb_tsne = tsne.fit_transform(emb_input_tsne)
 
     plot_clusters(
-        tsne_2d,
-        title="t-SNE (2D Projection)",
-        xlabel="t-SNE1",
-        ylabel="t-SNE2",
-        save_name="clusters_tsne.png",
-        labels_for_plot=tsne_labels,
+        emb_tsne,
+        "t-SNE-1",
+        "t-SNE-2",
+        "t-SNE (2D Projection)",
+        os.path.join(save_dir, "clusters_tsne.png"),
+        labels_to_plot=labels_tsne,
     )
-
-    print("All visualizations complete.")
 
 
 def load_data_from_hdf5(hdf5_path, use_quantized=False):
