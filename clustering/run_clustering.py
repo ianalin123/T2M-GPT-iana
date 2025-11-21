@@ -366,8 +366,9 @@ def visualize_clusters(
 
         os.makedirs(save_dir, exist_ok=True)
         plt.savefig(save_path, dpi=300, bbox_inches="tight", metadata={'Creator': None})
-
+        plt.savefig(save_path.replace(".png", ".pdf"), dpi=300, bbox_inches="tight", metadata={'Creator': None})
         print(f"Saved: {save_path}")
+        print(f"Saved: {save_path.replace('.png', '.pdf')}")
         plt.close()
 
     # --------------------------------------------------------
