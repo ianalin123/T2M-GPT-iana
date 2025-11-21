@@ -9,6 +9,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.mixture import GaussianMixture
 from tqdm import tqdm
+import seaborn as sns
 
 # new imports
 import h5py
@@ -242,211 +243,220 @@ def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", dim_reductio
     return labels, model, embeddings_agg, reducer
 
 
-def visualize_clusters(embeddings, labels, _texts, save_dir, max_samples=100000, cluster_verb_labels=None, dim_reduction_method=None):
-    """Create PCA, UMAP (if used), and t-SNE visualizations of clustered embeddings."""
+def visualize_clusters(
+    embeddings,
+    labels,
+    _texts,
+    save_dir,
+    max_samples=100000,
+    cluster_verb_labels=None,
+    dim_reduction_method=None
+):
 
-    # Subsample if too many
+    # --------------------------------------------------------
+    # Global plotting style for publication-quality output
+    # --------------------------------------------------------
+    plt.style.use("seaborn-v0_8-whitegrid")
+    plt.rcParams.update({
+        "font.family": "sans-serif",
+        "font.size": 12,
+        "axes.labelsize": 14,
+        "axes.titlesize": 16,
+        "axes.linewidth": 1.0,
+        "legend.fontsize": 12,
+        "xtick.labelsize": 12,
+        "ytick.labelsize": 12,
+        "figure.dpi": 300
+    })
+
+    # --------------------------------------------------------
+    # Subsample if needed
+    # --------------------------------------------------------
     if len(embeddings) > max_samples:
         print(f"\nSubsampling {max_samples} points for visualization...")
-        indices = np.random.choice(len(embeddings), max_samples, replace=False)
-        embeddings_vis = embeddings[indices]
-        labels_vis = labels[indices]
+        idx = np.random.choice(len(embeddings), max_samples, replace=False)
+        embeddings_vis = embeddings[idx]
+        labels_vis = labels[idx]
     else:
         embeddings_vis = embeddings
         labels_vis = labels
 
-    # Get unique clusters and their verb labels
     unique_labels = np.unique(labels_vis)
     n_clusters = len(unique_labels)
 
-    # Create a qualitative color palette with enough distinct colors
-    # For conference figures we want crisp, well-separated colors.
-    if n_clusters <= 20:
-        base_cmap = plt.cm.get_cmap("tab20", n_clusters)
-    else:
-        # Combine several qualitative maps and then slice the number we need
-        qualitative_cmaps = [
-            plt.cm.get_cmap("tab20"),
-            plt.cm.get_cmap("tab20b"),
-            plt.cm.get_cmap("tab20c"),
-            plt.cm.get_cmap("Set3"),
-        ]
-        color_list = []
-        for cm in qualitative_cmaps:
-            color_list.extend(cm(np.linspace(0, 1, cm.N)))
-        base_cmap = None  # not used directly; we take colors from color_list
-        color_array = np.array(color_list)
-        # Ensure we have at least n_clusters colors
-        if len(color_array) < n_clusters:
-            repeats = int(np.ceil(n_clusters / len(color_array)))
-            color_array = np.tile(color_array, (repeats, 1))
-
-    # Map cluster IDs to sequential color indices so nearby numeric IDs do not
-    # accidentally share similar shades.
+    # --------------------------------------------------------
+    # Strong, perceptually uniform color palette (HUSL)
+    # Works great for <= 30 clusters
+    # --------------------------------------------------------
     non_noise_labels = [cid for cid in unique_labels if cid != -1]
-    cluster_id_to_color_idx = {cid: idx for idx, cid in enumerate(non_noise_labels)}
+    colors = sns.color_palette("husl", len(non_noise_labels))
+    cluster_id_to_color_idx = {
+        cid: i for i, cid in enumerate(non_noise_labels)
+    }
 
-    # Helper function to plot clusters
+    # --------------------------------------------------------
+    # Reusable plotting function
+    # --------------------------------------------------------
     def plot_clusters(embeddings_2d, xlabel, ylabel, title, save_path, labels_to_plot=None):
         if labels_to_plot is None:
             labels_to_plot = labels_vis
-        fig, ax = plt.subplots(figsize=(16, 12))
+
+        fig, ax = plt.subplots(figsize=(10, 8))
+
         unique_plot_labels = np.unique(labels_to_plot)
-        for cluster_id in unique_plot_labels:
-            mask = labels_to_plot == cluster_id
-            if cluster_id == -1:
+
+        for cid in unique_plot_labels:
+            mask = labels_to_plot == cid
+
+            if cid == -1:
                 cluster_label = "Noise"
-            elif cluster_verb_labels and cluster_id in cluster_verb_labels:
-                verb = cluster_verb_labels[cluster_id]
-                cluster_label = verb if verb else "(no verb)"
+                point_color = (0.75, 0.75, 0.75)
             else:
-                cluster_label = f"Cluster {cluster_id}"
-
-            # Choose a clearly distinct color for each cluster. Noise is rendered
-            # in neutral light gray so the semantic clusters stand out.
-            if cluster_id == -1:
-                point_color = (0.75, 0.75, 0.75, 1.0)
-            else:
-                color_idx = cluster_id_to_color_idx.get(cluster_id, 0)
-                if n_clusters <= 20:
-                    point_color = base_cmap(color_idx)
+                # Verb label if provided
+                if cluster_verb_labels and cid in cluster_verb_labels:
+                    v = cluster_verb_labels[cid]
+                    cluster_label = v if v else f"Cluster {cid}"
                 else:
-                    point_color = color_array[color_idx]
+                    cluster_label = f"Cluster {cid}"
 
+                color_idx = cluster_id_to_color_idx.get(cid, 0)
+                point_color = colors[color_idx]
+
+            # Clean, high-quality scatter
             ax.scatter(
                 embeddings_2d[mask, 0],
                 embeddings_2d[mask, 1],
+                s=14,
                 color=point_color,
-                label=cluster_label,
-                alpha=0.8,
-                s=20,
-                edgecolors="black",
-                linewidths=0.2,
-            )
-        
-        ax.set_xlabel(xlabel, fontsize=14)
-        ax.set_ylabel(ylabel, fontsize=14)
-        ax.set_title(title, fontsize=16, fontweight="bold")
-        
-        if n_clusters <= 30:
-            legend = ax.legend(
-                loc="center left",
-                bbox_to_anchor=(1, 0.5),
-                ncol=1,
-                fontsize=12,
-                title="Cluster label",
-                title_fontsize=13,
-                frameon=False,
-            )
-        else:
-            legend = ax.legend(
-                loc="center left",
-                bbox_to_anchor=(1, 0.5),
-                ncol=2,
-                fontsize=11,
-                title="Cluster label",
-                title_fontsize=12,
-                frameon=False,
+                alpha=0.65,
+                rasterized=True,  # better PDF performance
+                label=cluster_label
             )
 
-        # Slightly enlarge legend marker sizes for readability in print
-        if legend is not None:
-            for handle in legend.legendHandles:
-                try:
-                    handle.set_sizes([40.0])
-                except AttributeError:
-                    pass
-        
-        plt.tight_layout()
-        os.makedirs(save_dir, exist_ok=True)
-        plt.savefig(save_path, dpi=300, bbox_inches="tight")
-        print(f"Saved visualization to {save_path}")
-        plt.close()
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_title(title, pad=12)
 
-    # PCA - Fast and interpretable!
-    print("\nComputing PCA for visualization...")
-    pca_viz = PCA(n_components=2)
-    embeddings_pca = pca_viz.fit_transform(embeddings_vis)
-    plot_clusters(
-        embeddings_pca,
-        f"PC1 ({pca_viz.explained_variance_ratio_[0]:.1%} variance)",
-        f"PC2 ({pca_viz.explained_variance_ratio_[1]:.1%} variance)",
-        f"PCA Visualization of Latent Embeddings\n(PC1: {pca_viz.explained_variance_ratio_[0]:.1%}, PC2: {pca_viz.explained_variance_ratio_[1]:.1%}, Total: {pca_viz.explained_variance_ratio_.sum():.1%})",
-        os.path.join(save_dir, "clusters_pca.png")
-    )
-
-    # UMAP visualization if UMAP was used for dimensionality reduction
-    if dim_reduction_method == "umap" and embeddings_vis.shape[1] >= 2:
-        print("\nCreating UMAP visualization from reduced embeddings...")
-        # Use first 2 dimensions of the already-reduced UMAP embeddings
-        embeddings_umap_2d = embeddings_vis[:, :2]
-        plot_clusters(
-            embeddings_umap_2d,
-            "UMAP Dimension 1",
-            "UMAP Dimension 2",
-            "UMAP Visualization of Latent Embeddings",
-            os.path.join(save_dir, "clusters_umap.png")
+        # Legend outside figure
+        ax.legend(
+            loc="center left",
+            bbox_to_anchor=(1.02, 0.5),
+            frameon=False,
+            title="Clusters",
+            title_fontsize=13
         )
 
-    # t-SNE - Better for visualizing local structure
+        ax.margins(0.05)
+        plt.tight_layout()
+
+        os.makedirs(save_dir, exist_ok=True)
+        plt.savefig(save_path, dpi=300, bbox_inches="tight", metadata={'Creator': None})
+        # Save PDF for vector-quality paper figures
+        pdf_path = save_path.replace(".png", ".pdf")
+        plt.savefig(pdf_path, dpi=300, bbox_inches="tight", metadata={'Creator': None})
+
+        print(f"Saved: {save_path}")
+        print(f"Saved vector PDF: {pdf_path}")
+        plt.close()
+
+    # --------------------------------------------------------
+    # PCA 2D
+    # --------------------------------------------------------
+    print("\nComputing PCA for visualization...")
+    pca = PCA(n_components=2)
+    emb_pca = pca.fit_transform(embeddings_vis)
+
+    plot_clusters(
+        emb_pca,
+        f"PC1 ({pca.explained_variance_ratio_[0]:.1%} variance)",
+        f"PC2 ({pca.explained_variance_ratio_[1]:.1%} variance)",
+        "PCA (2D Projection)",
+        os.path.join(save_dir, "clusters_pca.png"),
+    )
+
+    # --------------------------------------------------------
+    # UMAP (if embeddings already reduced)
+    # --------------------------------------------------------
+    if dim_reduction_method == "umap" and embeddings_vis.shape[1] >= 2:
+        print("\nUsing 2D UMAP embeddings for visualization...")
+        emb_umap = embeddings_vis[:, :2]
+
+        plot_clusters(
+            emb_umap,
+            "UMAP-1",
+            "UMAP-2",
+            "UMAP (2D Projection)",
+            os.path.join(save_dir, "clusters_umap.png"),
+        )
+
+    # --------------------------------------------------------
+    # t-SNE (limited sample)
+    # --------------------------------------------------------
     print("\nComputing t-SNE for visualization...")
     from sklearn.manifold import TSNE
 
-    # For t-SNE, use fewer samples if needed (it's slower)
     max_tsne_samples = min(10000, len(embeddings_vis))
     if len(embeddings_vis) > max_tsne_samples:
         print(f"  Subsampling to {max_tsne_samples} points for t-SNE...")
-        indices_tsne = np.random.choice(len(embeddings_vis), max_tsne_samples, replace=False)
-        embeddings_tsne_input = embeddings_vis[indices_tsne]
-        labels_tsne = labels_vis[indices_tsne]
+        idx_tsne = np.random.choice(len(embeddings_vis), max_tsne_samples, replace=False)
+        emb_input_tsne = embeddings_vis[idx_tsne]
+        labels_tsne = labels_vis[idx_tsne]
     else:
-        embeddings_tsne_input = embeddings_vis
+        emb_input_tsne = embeddings_vis
         labels_tsne = labels_vis
 
-    tsne = TSNE(n_components=2, random_state=42, perplexity=30, n_iter=1000, verbose=1)
-    embeddings_tsne = tsne.fit_transform(embeddings_tsne_input)
+    tsne = TSNE(
+        n_components=2,
+        random_state=42,
+        perplexity=30,
+        n_iter=1000,
+        verbose=1
+    )
+    emb_tsne = tsne.fit_transform(emb_input_tsne)
+
     plot_clusters(
-        embeddings_tsne,
-        "t-SNE Dimension 1",
-        "t-SNE Dimension 2",
-        "t-SNE Visualization of Latent Embeddings",
+        emb_tsne,
+        "t-SNE-1",
+        "t-SNE-2",
+        "t-SNE (2D Projection)",
         os.path.join(save_dir, "clusters_tsne.png"),
-        labels_to_plot=labels_tsne
+        labels_to_plot=labels_tsne,
     )
 
-    # PCA with more components for scree plot
-    print("\nComputing PCA scree plot...")
-    pca_full = PCA(n_components=min(50, embeddings_vis.shape[1]))
-    pca_full.fit(embeddings_vis)
+    # # --------------------------------------------------------
+    # # PCA Scree plot
+    # # --------------------------------------------------------
+    # print("\nComputing PCA variance analysis...")
+    # pca_full = PCA(n_components=min(50, embeddings_vis.shape[1]))
+    # pca_full.fit(embeddings_vis)
 
-    plt.figure(figsize=(12, 6))
-    plt.subplot(1, 2, 1)
-    plt.plot(
-        range(1, len(pca_full.explained_variance_ratio_) + 1),
-        pca_full.explained_variance_ratio_,
-        "bo-",
-    )
-    plt.xlabel("Principal Component")
-    plt.ylabel("Explained Variance Ratio")
-    plt.title("Scree Plot")
-    plt.grid(True, alpha=0.3)
+    # fig, ax = plt.subplots(figsize=(10, 4))
+    # ax.plot(
+    #     range(1, len(pca_full.explained_variance_ratio_) + 1),
+    #     pca_full.explained_variance_ratio_,
+    #     marker="o"
+    # )
+    # ax.set_xlabel("Principal Component")
+    # ax.set_ylabel("Explained Variance Ratio")
+    # ax.set_title("PCA Scree Plot")
+    # ax.grid(alpha=0.3)
 
-    plt.subplot(1, 2, 2)
-    cumsum = np.cumsum(pca_full.explained_variance_ratio_)
-    plt.plot(range(1, len(cumsum) + 1), cumsum, "ro-")
-    plt.axhline(y=0.95, color="g", linestyle="--", label="95% variance")
-    plt.xlabel("Number of Components")
-    plt.ylabel("Cumulative Explained Variance")
-    plt.title("Cumulative Variance Explained")
-    plt.legend()
-    plt.grid(True, alpha=0.3)
+    # plt.tight_layout()
+    # plt.savefig(
+    #     os.path.join(save_dir, "pca_variance.png"),
+    #     dpi=300,
+    #     bbox_inches="tight",
+    #     metadata={'Creator': None}
+    # )
+    # plt.savefig(
+    #     os.path.join(save_dir, "pca_variance.pdf"),
+    #     dpi=300,
+    #     bbox_inches="tight",
+    #     metadata={'Creator': None}
+    # )
+    # plt.close()
 
-    plt.tight_layout()
-    plt.savefig(
-        os.path.join(save_dir, "pca_variance.png"), dpi=300, bbox_inches="tight"
-    )
-    print(f"Saved PCA variance analysis to {os.path.join(save_dir, 'pca_variance.png')}")
-    plt.close()
+    # print("Saved PCA variance plot.")
 
 
 def load_data_from_hdf5(hdf5_path, use_quantized=False):
@@ -805,8 +815,35 @@ def main():
         help="Clustering algorithm: 'kmeans' (K-Means, default), 'gmm' (Gaussian Mixture Model), or 'hdbscan' (HDBSCAN)",
     )
 
-    # optional arguments
+    ### optional arguments
     
+    # use quantized embeddings
+    parser.add_argument(
+        "--use-quantized",
+        action="store_true",
+        help="Use quantized embeddings instead of encoder embeddings for clustering (only works with --hdf5-file)",
+    )
+
+
+    # dimensionality reduction (both pca and umap)
+    parser.add_argument(
+        "--dim-reduction-dims",
+        default=50,
+        type=int,
+        help="Number of dimensions for dimensionality reduction (default: 50)",
+    )
+
+    # umap
+    parser.add_argument('--umap-n-neighbors', default=15, type=int,
+                   help='UMAP n_neighbors parameter (default: 15)',
+                )
+    parser.add_argument('--umap-min-dist', default=0.1, type=float,
+                   help='UMAP min_dist parameter (default: 0.1)',
+                )
+    parser.add_argument('--umap-metric', default='euclidean', type=str,
+                   help='UMAP metric parameter',
+                )
+
     # k-means
     parser.add_argument(
         "--n-clusters",
@@ -845,32 +882,6 @@ def main():
         default=0.5,
         type=float,
         help="Cluster selection epsilon for HDBSCAN (default: 0.5)",
-    )
-
-    # dimensionality reduction (both pca and umap)
-    parser.add_argument(
-        "--dim-reduction-dims",
-        default=50,
-        type=int,
-        help="Number of dimensions for dimensionality reduction (default: 50)",
-    )
-
-    # umap
-    parser.add_argument('--umap-n-neighbors', default=15, type=int,
-                   help='UMAP n_neighbors parameter (default: 15)',
-                )
-    parser.add_argument('--umap-min-dist', default=0.1, type=float,
-                   help='UMAP min_dist parameter (default: 0.1)',
-                )
-    parser.add_argument('--umap-metric', default='euclidean', type=str,
-                   help='UMAP metric parameter',
-                )
-
-    # use quantized embeddings
-    parser.add_argument(
-        "--use-quantized",
-        action="store_true",
-        help="Use quantized embeddings instead of encoder embeddings for clustering (only works with --hdf5-file)",
     )
 
     args = parser.parse_args()
