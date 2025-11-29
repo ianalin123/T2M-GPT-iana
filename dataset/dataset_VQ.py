@@ -9,13 +9,13 @@ from tqdm import tqdm
 
 
 class VQMotionDataset(data.Dataset):
-    def __init__(self, dataset_name, window_size = 64, unit_length = 4):
+    def __init__(self, dataset_name, window_size = 64, unit_length = 4, split = 'train'):
         self.window_size = window_size
         self.unit_length = unit_length
         self.dataset_name = dataset_name
 
         if dataset_name == 't2m':
-            self.data_root = './dataset/HumanML3D'
+            self.data_root = '/home/malulekevon/motion_latent_space/HumanML3D/HumanML3D/'
             self.motion_dir = pjoin(self.data_root, 'new_joint_vecs')
             self.text_dir = pjoin(self.data_root, 'texts')
             self.joints_num = 22
@@ -23,7 +23,7 @@ class VQMotionDataset(data.Dataset):
             self.meta_dir = 'checkpoints/t2m/VQVAEV3_CB1024_CMT_H1024_NRES3/meta'
 
         elif dataset_name == 'kit':
-            self.data_root = './dataset/KIT-ML'
+            self.data_root = '/home/malulekevon/motion_latent_space/KIT-ML/'
             self.motion_dir = pjoin(self.data_root, 'new_joint_vecs')
             self.text_dir = pjoin(self.data_root, 'texts')
             self.joints_num = 21
@@ -36,7 +36,7 @@ class VQMotionDataset(data.Dataset):
         mean = np.load(pjoin(self.meta_dir, 'mean.npy'))
         std = np.load(pjoin(self.meta_dir, 'std.npy'))
 
-        split_file = pjoin(self.data_root, 'train.txt')
+        split_file = pjoin(self.data_root, split + '.txt')
 
         self.data = []
         self.lengths = []
@@ -88,12 +88,13 @@ def DATALoader(dataset_name,
                batch_size,
                num_workers = 8,
                window_size = 64,
-               unit_length = 4):
-    
-    trainSet = VQMotionDataset(dataset_name, window_size=window_size, unit_length=unit_length)
-    prob = trainSet.compute_sampling_prob()
-    sampler = torch.utils.data.WeightedRandomSampler(prob, num_samples = len(trainSet) * 1000, replacement=True)
-    train_loader = torch.utils.data.DataLoader(trainSet,
+               unit_length = 4,
+               split = 'train'):
+
+    dataset = VQMotionDataset(dataset_name, window_size=window_size, unit_length=unit_length, split=split)
+    # prob = dataset.compute_sampling_prob()
+    # sampler = torch.utils.data.WeightedRandomSampler(prob, num_samples = len(dataset) * 1000, replacement=True)
+    loader = torch.utils.data.DataLoader(dataset,
                                               batch_size,
                                               shuffle=True,
                                               #sampler=sampler,
@@ -101,7 +102,7 @@ def DATALoader(dataset_name,
                                               #collate_fn=collate_fn,
                                               drop_last = True)
     
-    return train_loader
+    return loader
 
 def cycle(iterable):
     while True:
