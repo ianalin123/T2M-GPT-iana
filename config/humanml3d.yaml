@@ -11,9 +11,11 @@ depth: 3
 dilation_growth_rate: 3
 loss_vel: 0.5
 commit: 0.5
-exp_name: VQVAE_humanml3d_128_512
-# out_dir: output
+weight_decay: 0.0
+mu: 0.99
+exp_name: VQVAE_t2m_128_512
 dataname: t2m
 vq_act: relu
 quantizer: ema_reset
 recons_loss: l1_smooth
+out_dir: output

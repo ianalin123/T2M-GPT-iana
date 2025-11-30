@@ -14,22 +14,21 @@ early_terminate:
 parameters:
   # Training hyperparameters
   batch_size:
-    values: [64, 128, 256, 512]
+    values: [64, 128, 256]
   
   
   learning_rate:
-    distribution: uniform
+    distribution: log_uniform_values
     min: 0.00005
     max: 0.001
 
+  gamma:
+    distribution: log_uniform_values
+    min: 0.05
+    max: 0.5
 
   weight_decay:
     values: [0.0005, 0.001, 0.005]
-
-  gamma:
-    distribution: uniform
-    min: 0.05
-    max: 0.5
 
   depth:
     values: [3, 4]  
@@ -59,12 +58,20 @@ parameters:
   dataname:
     value: kit
   vq_act: 
-    value: relu
+    distribution: categorical
+    values: [relu, silu, gelu]
   quantizer:
     value: ema_reset
   recons_loss:
     value: l1_smooth
-  
+  mu:
+    values: [0.95, 0.97, 0.99]
+
+  lr_scheduler:
+    value: [50000, 200000]
+
+cap_run: 150
+
 command:
   - ${env}
   - python

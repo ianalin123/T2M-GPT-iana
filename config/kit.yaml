@@ -12,7 +12,8 @@ dilation_growth_rate: 3
 loss_vel: 0.5
 commit: 0.5
 exp_name: VQVAE_kit_128_512
-# out_dir: output
+weight_decay: 0.0
+mu: 0.99
 dataname: kit
 vq_act: relu
 quantizer: ema_reset

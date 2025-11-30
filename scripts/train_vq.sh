@@ -1,9 +1,10 @@
 conda activate T2M-GPT
 
-cd /home/malulekevon/motion_latent_space/T2M-GPT-iana
+dataset=t2m
+batch_size=256
 #Original model config
-CUDA_VISIBLE_DEVICES=7 python train_vq.py \
---batch-size 256 \
+CUDA_VISIBLE_DEVICES=4 python train_vq.py \
+--batch-size $batch_size \
 --lr 2e-4 \
 --total-iter 300000 \
 --warm-up-iter 1000 \
@@ -16,19 +17,17 @@ CUDA_VISIBLE_DEVICES=7 python train_vq.py \
 --depth 3 \
 --dilation-growth-rate 3 \
 --out-dir output \
---dataname t2m \
+--dataname $dataset \
 --vq-act relu \
 --quantizer ema_reset \
 --loss-vel 0.5 \
 --recons-loss l1_smooth \
---exp-name VQVAE_512_512 \
---config config/humanml3d.yaml
-&
+--exp-name VQVAE_512_512 &
 
 
 #128 codebook size
-CUDA_VISIBLE_DEVICES=6 python train_vq.py \
---batch-size 256 \
+CUDA_VISIBLE_DEVICES=5 python train_vq.py \
+--batch-size $batch_size \
 --lr 2e-4 \
 --total-iter 300000 \
 --warm-up-iter 1000 \
@@ -41,7 +40,7 @@ CUDA_VISIBLE_DEVICES=6 python train_vq.py \
 --depth 3 \
 --dilation-growth-rate 3 \
 --out-dir output \
---dataname t2m \
+--dataname $dataset \
 --vq-act relu \
 --quantizer ema_reset \
 --loss-vel 0.5 \
@@ -50,8 +49,8 @@ CUDA_VISIBLE_DEVICES=6 python train_vq.py \
 
 
 #256 codebook size
-CUDA_VISIBLE_DEVICES=5 python train_vq.py \
---batch-size 256 \
+CUDA_VISIBLE_DEVICES=6 python train_vq.py \
+--batch-size $batch_size \
 --lr 2e-4 \
 --total-iter 300000 \
 --warm-up-iter 1000 \
@@ -64,7 +63,7 @@ CUDA_VISIBLE_DEVICES=5 python train_vq.py \
 --depth 3 \
 --dilation-growth-rate 3 \
 --out-dir output \
---dataname t2m \
+--dataname $dataset \
 --vq-act relu \
 --quantizer ema_reset \
 --loss-vel 0.5 \
@@ -73,8 +72,8 @@ CUDA_VISIBLE_DEVICES=5 python train_vq.py \
 
 
 #1024 codebook size
-CUDA_VISIBLE_DEVICES=4 python train_vq.py \
---batch-size 256 \
+CUDA_VISIBLE_DEVICES=7 python train_vq.py \
+--batch-size $batch_size \
 --lr 2e-4 \
 --total-iter 300000 \
 --warm-up-iter 1000 \
@@ -87,7 +86,7 @@ CUDA_VISIBLE_DEVICES=4 python train_vq.py \
 --depth 3 \
 --dilation-growth-rate 3 \
 --out-dir output \
---dataname t2m \
+--dataname $dataset \
 --vq-act relu \
 --quantizer ema_reset \
 --loss-vel 0.5 \

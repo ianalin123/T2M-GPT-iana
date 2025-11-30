@@ -43,6 +43,7 @@ def update_lr_warm_up(optimizer, nb_iter, warm_up_iter, lr):
 
 ##### ---- Exp dirs ---- #####
 train_mode = False
+now = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 args = option_vq.get_args_parser()
 
@@ -56,7 +57,7 @@ if args.config != 'None' and train_mode:
 
 torch.manual_seed(args.seed)
 
-args.out_dir = os.path.join(args.out_dir, f'{args.exp_name}')
+args.out_dir = os.path.join(args.out_dir, f'{args.exp_name}_{args.dataname}_{now}')
 os.makedirs(args.out_dir, exist_ok = True)
 
 ##### ---- Logger ---- #####
@@ -95,8 +96,12 @@ train_loader = dataset_VQ.DATALoader(args.dataname,
                                         split='train')
 
 logger.info('Creating validation dataloader...')
+if args.dataname == 'kit':
+    val_batch_size = min(128, args.batch_size)
+else:
+    val_batch_size = args.batch_size
 val_loader = dataset_VQ.DATALoader(args.dataname,
-                                        args.batch_size,
+                                        val_batch_size,
                                         window_size=args.window_size,
                                         unit_length=2**args.down_t,
                                         split='val')
@@ -140,6 +145,12 @@ net.train()
 logger.info(f'Model moved to CUDA in {time.time() - start_time:.2f} seconds')
 
 ##### ---- Optimizer & Scheduler ---- #####
+# Handle lr_scheduler being a single value or list (for W&B sweep compatibility)
+if isinstance(args.lr_scheduler, int):
+    args.lr_scheduler = [args.lr_scheduler]
+elif not isinstance(args.lr_scheduler, list):
+    args.lr_scheduler = list(args.lr_scheduler)
+
 optimizer = optim.AdamW(net.parameters(), lr=args.lr, betas=(0.9, 0.99), weight_decay=args.weight_decay)
 scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_scheduler, gamma=args.gamma)
   
@@ -147,10 +158,9 @@ scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_s
 Loss = losses.ReConsLoss(args.recons_loss, args.nb_joints)
 
 #Wandb logging
-now = datetime.now().strftime("%Y%m%d_%H%M%S")
-wandb.init(project="T2M-GPT-VQ_VAE", 
+wandb.init(project=f"T2M-GPT-VQ_VAE_{args.dataname}", 
            config=args,
-           name=args.exp_name if train_mode else f"VQVAE_{args.dataname}_{now}",
+           name=f"{args.exp_name}_{args.dataname}_{now}" if train_mode else f"VQVAE_{args.dataname}_{now}",
            entity="malulekevon")
 
 # Update args with wandb sweep parameters (if running a sweep)
@@ -161,9 +171,15 @@ for key in wandb.config.keys():
 ##### ------ warm-up ------- #####
 avg_recons, avg_perplexity, avg_commit = 0., 0., 0.
 
+train_loader_warmup = iter(train_loader)
+
 for nb_iter in tqdm(range(1, args.warm_up_iter), desc="Warmup", leave=False):
     
-  for gt_motion in train_loader:
+    try:
+        gt_motion = next(train_loader_warmup)
+    except StopIteration:
+        train_loader_warmup = iter(train_loader)
+        gt_motion = next(train_loader_warmup)
 
     optimizer, current_lr = update_lr_warm_up(optimizer, nb_iter, args.warm_up_iter, args.lr)
     
@@ -183,7 +199,7 @@ for nb_iter in tqdm(range(1, args.warm_up_iter), desc="Warmup", leave=False):
     avg_perplexity += perplexity.item()
     avg_commit += loss_commit.item()
     
-    if nb_iter % args.print_iter ==  0 :
+    if nb_iter % args.print_iter == 0:
         avg_recons /= args.print_iter
         avg_perplexity /= args.print_iter
         avg_commit /= args.print_iter
@@ -199,14 +215,21 @@ avg_recons, avg_perplexity, avg_commit, avg_total_loss = 0., 0., 0., 0.
 # Track best validation loss for checkpoint saving
 best_val_loss = float('inf')
 
-# for nb_iter in tqdm(range(1, args.total_iter + 1), desc="Training", leave=False):
 nb_iter = 0
-while nb_iter < args.total_iter + 1:
-    with tqdm(total=args.total_iter, desc="Training", leave=False) as pbar:
-      for gt_motion in train_loader :
-        
+train_loader_iter = iter(train_loader)
+
+# Create progress bar outside the loop
+with tqdm(total=args.total_iter, desc="Training Progress", unit="iter", leave=False) as pbar:
+    while nb_iter < args.total_iter:
         nb_iter += 1
-        pbar.update(1)
+        
+        # Get next batch, cycling through dataset
+        try:
+            gt_motion = next(train_loader_iter)
+        except StopIteration:
+            train_loader_iter = iter(train_loader)
+            gt_motion = next(train_loader_iter)
+        
         gt_motion = gt_motion.cuda().float() # bs, nb_joints, joints_dim, seq_len
         
         pred_motion, loss_commit, perplexity = net(gt_motion)
@@ -225,7 +248,14 @@ while nb_iter < args.total_iter + 1:
         avg_commit += loss_commit.item()
         avg_total_loss += loss.item()
         
-        if nb_iter % args.print_iter ==  0 :
+        # Update progress bar
+        pbar.update(1)
+        pbar.set_postfix({
+            'loss': f'{avg_total_loss/(nb_iter % args.print_iter if nb_iter % args.print_iter != 0 else args.print_iter):.4f}',
+            'ppl': f'{avg_perplexity/(nb_iter % args.print_iter if nb_iter % args.print_iter != 0 else args.print_iter):.2f}'
+        })
+        
+        if nb_iter % args.print_iter == 0:
             avg_recons /= args.print_iter
             avg_perplexity /= args.print_iter
             avg_commit /= args.print_iter
@@ -326,5 +356,17 @@ while nb_iter < args.total_iter + 1:
               
               net.train()
 
+
+#save the last model checkpoint
+model_path = f'{args.out_dir}/models'
+os.makedirs(model_path, exist_ok=True)
+last_model_path = f'{model_path}/last_model.pth'
+torch.save({'net' : net.state_dict(),
+            'model_architectue': net,
+            'optimizer': optimizer.state_dict(),
+            'learning_rate': optimizer.param_groups[0]['lr'],
+            'scheduler': scheduler.state_dict(),
+            'iter': nb_iter,
+            'best_val_loss': best_val_loss}, last_model_path)
 
 wandb.finish()
