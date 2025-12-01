@@ -1,0 +1,461 @@
+Noise Samples - 114 samples
+================================================================================
+These samples were not assigned to any cluster by HDBSCAN.
+================================================================================
+
+1. Sample: 000387
+   Text: the figure bends slightly forward to the left, seems to support a base with the right hand and lift with the left as if raising the top part of a tall container from it's side, then lowers the left and right hands to lay the container back on it's side.
+   Compound Verb: bend-lay-lift-lower-place-raise-scratch-seem-support-tilt
+
+2. Sample: 000489
+   Text: a person gentle raises both arms.
+   Compound Verb: raise-speak-stand-sway
+
+3. Sample: 000510
+   Text: the person is moving something.
+   Compound Verb: move-somthe-stand
+
+4. Sample: 000731
+   Text: walks in a slight bend to the left and back, where the right hand goes up and down in a slow chopping motion.
+   Compound Verb: begin-go-grab-return-scrub-walk-wipe
+
+5. Sample: 001197
+   Text: a person is playing an imaginary guitar, while swaying back-and-forth
+   Compound Verb: bend-extend-hold-play-strum-sway
+
+6. Sample: 001212
+   Text: a person staying on the same place, whle left leg placed after right leg
+   Compound Verb: lean-place-stand-stay-straighten
+
+7. Sample: 002137
+   Text: a person raises their right arm to the front, then their left arm to the front, then their right arm out to the side.
+   Compound Verb: bring-left-lift-put-raise
+
+8. Sample: 002301
+   Text: stick figure does a chicken flap with the arma
+   Compound Verb: flap-put
+
+9. Sample: 003006
+   Text: starting with his right arm, a person shakes their arms in a back-and-forth motion, as though limbering up for exercise.
+   Compound Verb: come-gesture-go-hold-lift-limber-shake-side-start-wriggle
+
+10. Sample: 003608
+   Text: the person is  swinging their hands out.
+   Compound Verb: raise-slam-swing-swinge
+
+11. Sample: 003839
+   Text: person brings both hands together then looks at wrist
+   Compound Verb: bring-go-look-meet
+
+12. Sample: 004152
+   Text: the man stands slightly bent at the waist holding something in his right hand and using his left hand to touch it repeatedly oh, then takes a side step to the left.
+   Compound Verb: grab-hold-pick-stand-stoop-take-touch-use
+
+13. Sample: 004801
+   Text: this person is standing and briefly moves.
+   Compound Verb: gesture-get-move-nudge-stand
+
+14. Sample: 005176
+   Text: person reach down to left and picks up container with both hands. container is raised and turned to right as if emptying out.
+   Compound Verb: empty-pick-place-raise-reach-return-tilt-turn
+
+15. Sample: 005310
+   Text: the person cleans the kitchen counter
+   Compound Verb: clean-move-table-walk-wipe
+
+16. Sample: 005359
+   Text: a man jogs briefly then stops.
+   Compound Verb: jog-stop
+
+17. Sample: 005454
+   Text: a man catching and then throws an object with his right hand twice.
+   Compound Verb: catch-move-throw
+
+18. Sample: 005523
+   Text: a figure holds and imaginary ball in front of him with two hands at chest level and leans back then returns to straight standing position.
+   Compound Verb: hold-lean-return
+
+19. Sample: 005876
+   Text: person slides to the right.
+   Compound Verb: drag-slide-take
+
+20. Sample: 006150
+   Text: the person stands still and shuffles their feet for a little.
+   Compound Verb: greet-reach-shake-shift-shuffle-stand
+
+21. Sample: 006230
+   Text: a person grabbed something and put it somewhere
+   Compound Verb: grab-lift-make-move-put
+
+22. Sample: 006766
+   Text: person stumbles and bends to their right side.
+   Compound Verb: appear-bend-fall-regain-stand-stumble-tie
+
+23. Sample: 007245
+   Text: the person was throwing with both hands
+   Compound Verb: bring-hold-make-op-raise-seem-shoot-throw
+
+24. Sample: 007791
+   Text: a person gets bumped by something and stumbles to their right
+   Compound Verb: bump-get-move-push-recover
+
+25. Sample: 008029
+   Text: the person was getting a food delivery.
+   Compound Verb: gesture-get-grab-show-turn-use
+
+26. Sample: 008039
+   Text: a man takes a step back with his left foot, then raises his left arm while leaning right.
+   Compound Verb: box-catch-lean-raise-sway-take
+
+27. Sample: 008496
+   Text: a person raise both their hands and claps.
+   Compound Verb: put-raise-stand-take-wade
+
+28. Sample: 008635
+   Text: person sways back a few steps then puts left hand to face and moves hand around area
+   Compound Verb: face-hand-lift-move-put-step-sway-warm
+
+29. Sample: 008734
+   Text: a person bows slighly once.
+   Compound Verb: bow-do-lean-take
+
+30. Sample: 008895
+   Text: a person is hopping gently in place
+   Compound Verb: hop-jump
+
+31. Sample: 009425
+   Text: a person lifts their right arm and gestures/points across their body halfway to the left.
+   Compound Verb: lift-point-swing
+
+32. Sample: 009726
+   Text: a person hits something with their right arm then catches something with both arms
+   Compound Verb: catch-hit-pull-raise-throw
+
+33. Sample: 010401
+   Text: staring with arms out in a t, a person brings their hands together for a clap and proceeds to take two steps to sit down to relax.
+   Compound Verb: appear-begin-bring-clap-lift-lower-proceed-relax-sit-stare-take-walk
+
+34. Sample: 011384
+   Text: a person performing a swift strafing movement to the right
+   Compound Verb: get-perform-push-recover-take
+
+35. Sample: 011387
+   Text: a person moving left arm up and the right arm up and then kicks right leg up and then return to position.
+   Compound Verb: kick-left-move-return-sit-turn
+
+36. Sample: 011561
+   Text: a person is sitting and moves his right and left hand around.
+   Compound Verb: appear-extend-left-move-raise-rock-sit-sway
+
+37. Sample: 011609
+   Text: a person is in a fighting stance, ducks and then swings out with his left arm.
+   Compound Verb: dodge-duck-squar-swing
+
+38. Sample: 011782
+   Text: a person squats down a little and then jumps.
+   Compound Verb: do-jump-squat-take
+
+39. Sample: 012615
+   Text: a person grabbed something and put it somewhere
+   Compound Verb: grab-look-put-take-tilt
+
+40. Sample: 012689
+   Text: a person lifts weights with their left hand.
+   Compound Verb: curl-left-lift-stand
+
+41. Sample: 012718
+   Text: someone pushes himself up and takes a step back
+   Compound Verb: jump-push-steady-take
+
+42. Sample: 012807
+   Text: someone bends over and stretches to their toes from left to right.
+   Compound Verb: bend-do-left-spread-stretch-touch
+
+43. Sample: 012844
+   Text: a figure gestures in exasperation with their right hand
+   Compound Verb: hit-make-play
+
+44. Sample: 013171
+   Text: a person makes brushing motions with their hands, bends slightly, turns, and walks in an arc.
+   Compound Verb: bend-brush-make-raise-sit-stand-take-turn-walk
+
+45. Sample: 013671
+   Text: a man jumps up and down with arms stiffly at his sides.
+   Compound Verb: jump
+
+46. Sample: 014112
+   Text: moving arm up and down near chest.
+   Compound Verb: move-pick-pour-set-shake
+
+47. Sample: 014119
+   Text: a person throws a left punch to someone's gut
+   Compound Verb: go-hit-left-stand-throw
+
+48. Sample: 014562
+   Text: a person frantically waves their arms around before getting into a fighting position and making a punch.
+   Compound Verb: bend-fight-get-hit-lunge-make-move-rest-spinne-swing-wave
+
+49. Sample: B_003293
+   Text: a man lowers his outstretched hands down to his sides.
+   Compound Verb: lower-reach-take-type
+
+50. Sample: B_M001995
+   Text: a person brings their arms down
+   Compound Verb: bring-go-lower-make-place-reach-stand
+
+51. Sample: C_000387
+   Text: a person scratches their aim
+   Compound Verb: bend-lay-lift-lower-place-raise-scratch-seem-support-tilt
+
+52. Sample: D_M005895
+   Text: a person walks forward, leans down to pick something up with their left hand, and then unscrews the lid
+   Compound Verb: begin-clean-grab-lean-pick-polish-take-turn-unscrew-walk-wipe
+
+53. Sample: K_M003006
+   Text: a person lifts up his right arm and wriggles it around, and he gestures to his right arm with his left hand, then he wriggles both arms side to side, lifts them up
+   Compound Verb: come-gesture-go-hold-lift-limber-shake-side-start-wriggle
+
+54. Sample: K_M011561
+   Text: the sim appears to be sitting down with both hands up, rocking and swaying a bit with their hands extended toward their head.
+   Compound Verb: appear-extend-move-raise-rock-sit-sway
+
+55. Sample: M000387
+   Text: the figure bends slightly forward to the right, seems to support a base with the left hand and lift with the right as if raising the top part of a tall container from it's side, then lowers the right and left hands to lay the container back on it's side.
+   Compound Verb: bend-lay-left-lift-lower-place-raise-scratch-seem-support-tilt
+
+56. Sample: M000489
+   Text: a person gentle raises both arms.
+   Compound Verb: raise-speak-stand-sway
+
+57. Sample: M000531
+   Text: a man moves his hands in front of his face.
+   Compound Verb: knock-move-stand
+
+58. Sample: M000557
+   Text: a person raises their blue arm up and puts it down. then they take one step backwards.
+   Compound Verb: lift-put-raise-return-stand-step-take-walk
+
+59. Sample: M000731
+   Text: walks in a slight bend to the right and back, where the left hand goes up and down in a slow chopping motion.
+   Compound Verb: begin-go-grab-return-scrub-walk-wipe
+
+60. Sample: M001197
+   Text: a person holds their right arm out while strumming up and down with their left arm, all while swaying and bending their leg in time with their arm.
+   Compound Verb: bend-extend-hold-play-strum-sway
+
+61. Sample: M001212
+   Text: a man stands right foot forward and leans to his left then up left again.
+   Compound Verb: lean-place-stand-stay-straighten-whle
+
+62. Sample: M001539
+   Text: person person put his right arm up like he was looking out a watch.
+   Compound Verb: go-look-put-watch
+
+63. Sample: M002105
+   Text: the man is standing still covering his mouth with his hand
+   Compound Verb: cover-left-put-raise-stand
+
+64. Sample: M002134
+   Text: a person raises their left hand, to possibly put something in their mouth, then raising the right hand as if to wipe sweat from their brow.
+   Compound Verb: drink-make-open-point-proceed-put-raise-wipe
+
+65. Sample: M002137
+   Text: a person raises their left arm to the front, then their right arm to the front, then their left arm out to the side.
+   Compound Verb: bring-left-lift-put-raise
+
+66. Sample: M002301
+   Text: stick figure does a chicken flap with the arma
+   Compound Verb: flap-put
+
+67. Sample: M002686
+   Text: a person walks in a dejected half circle, then sits down on a chair or bench.
+   Compound Verb: approach-deject-outstretche-sit-stand-walk
+
+68. Sample: M002839
+   Text: a person gestures to the ground, and then to the left, and then back to the ground
+   Compound Verb: gesture-hold-move-pick-put
+
+69. Sample: M003006
+   Text: a human figure shakes out its right arm and holds it up, then the other arm comes up in a "monkey" position. both arms go down and loosely shake as the body shakes out loosely
+   Compound Verb: come-gesture-go-hold-lift-limber-shake-side-start-wriggle
+
+70. Sample: M003608
+   Text: the person is  swinging their hands out.
+   Compound Verb: raise-slam-swing-swinge
+
+71. Sample: M003776
+   Text: a person swings their left arm as if they are hitting something.
+   Compound Verb: hit-shoot-step-swing-use
+
+72. Sample: M003839
+   Text: the hands are met at the middle of the waist shaking and go back down to the side of the body.
+   Compound Verb: bring-go-look-meet
+
+73. Sample: M004152
+   Text: a person picking up something heavy
+   Compound Verb: grab-hold-pick-stand-stoop-take-touch-use
+
+74. Sample: M004801
+   Text: this person is standing and briefly moves.
+   Compound Verb: gesture-get-move-nudge-stand
+
+75. Sample: M004924
+   Text: speed walking forward with a few steps.
+   Compound Verb: stop-swinge-walk
+
+76. Sample: M005176
+   Text: a person reaches to his right, picks something up, tilts the object, and then returns it to its original position.
+   Compound Verb: empty-left-pick-place-raise-reach-return-tilt-turn
+
+77. Sample: M005359
+   Text: a man jogs briefly then stops.
+   Compound Verb: jog-stop
+
+78. Sample: M005454
+   Text: a man catching and then throws an object with his left hand twice.
+   Compound Verb: catch-move-throw
+
+79. Sample: M005523
+   Text: a person leans quickly backward from something
+   Compound Verb: hold-lean-return
+
+80. Sample: M005876
+   Text: person slides to the left.
+   Compound Verb: drag-slide-take
+
+81. Sample: M005895
+   Text: a person walks a step, bends, grabs something with his left hand, turns to his right, takes a half-step, bends and grabs something with his right hand, takes a quarter-turn and begins polishing or cleaning something.
+   Compound Verb: begin-clean-grab-lean-pick-polish-take-turn-unscrew-walk-wipe
+
+82. Sample: M006016
+   Text: the person pick some thing up and tilted it on its side.
+   Compound Verb: hold-open-pick-put-tilt
+
+83. Sample: M006150
+   Text: the person stands still and shuffles their feet for a little.
+   Compound Verb: greet-reach-shake-shift-shuffle-stand
+
+84. Sample: M006516
+   Text: person lowers arms and picks something up with left hand and moves left hand up and to sides
+   Compound Verb: dry-left-lower-move-pick-transfer-use-wash
+
+85. Sample: M006766
+   Text: a person nearly falls while legs are tied
+   Compound Verb: appear-bend-fall-regain-stand-stumble-tie
+
+86. Sample: M007124
+   Text: an individual stands and appears to scribble on a wall board.
+   Compound Verb: appear-drink-move-scribble-sidestep-stand-write
+
+87. Sample: M007263
+   Text: a man leans forward and then rears back to throw with his left arm, he throws again.
+   Compound Verb: get-give-hit-lean-rear-throw
+
+88. Sample: M007429
+   Text: person lifts left arm up throws something then brings both hands together
+   Compound Verb: bring-cast-left-lift-stand
+
+89. Sample: M007440
+   Text: walking to the side and punching hands.
+   Compound Verb: back-kick-move-practice-walk
+
+90. Sample: M007522
+   Text: person reaches for something with left hand and then moves forward.
+   Compound Verb: come-extend-give-grab-lower-move-reach-stand-start-walk
+
+91. Sample: M007732
+   Text: a person holding their arms up in front of their face, brings up left arm higher.
+   Compound Verb: appear-bend-bring-fight-hold-move
+
+92. Sample: M007791
+   Text: a person is pushed by an unseen force, before they recover.
+   Compound Verb: bump-get-move-push-recover
+
+93. Sample: M007960
+   Text: a person runs forward, swinging their arms a little.
+   Compound Verb: move-run-stop-swinge
+
+94. Sample: M008029
+   Text: the person was getting a food delivery.
+   Compound Verb: gesture-get-grab-show-turn-use
+
+95. Sample: M009425
+   Text: a person points with their left arm to the right.
+   Compound Verb: lift-point-swing
+
+96. Sample: M010057
+   Text: the person is flapping their arms like a chicken.
+   Compound Verb: bend-flap-squat
+
+97. Sample: M010401
+   Text: a person slowly lowers his arms, claps then walks forward to sit on a chair with his arms behind his head.
+   Compound Verb: appear-begin-bring-clap-lift-lower-proceed-relax-sit-stare-take-walk
+
+98. Sample: M011378
+   Text: a person acts like they are throwing an object.
+   Compound Verb: act-catch-move-throw-wind
+
+99. Sample: M011384
+   Text: a person performing a swift strafing movement to the left
+   Compound Verb: get-perform-push-recover-take
+
+100. Sample: M011387
+   Text: sit on the floor and moving the legs and hands .
+   Compound Verb: kick-left-move-return-sit-turn
+
+101. Sample: M011609
+   Text: person ducks a punch while in a fighting stance
+   Compound Verb: dodge-duck-squar-swing
+
+102. Sample: M011782
+   Text: the man takes one hop into the air.
+   Compound Verb: do-jump-squat-take
+
+103. Sample: M012267
+   Text: a person is standing and moving their forearms up and down at the same time.
+   Compound Verb: lift-move-stand
+
+104. Sample: M012807
+   Text: someone bends over and stretches to their toes from right to left.
+   Compound Verb: bend-do-spread-stretch-touch
+
+105. Sample: M013171
+   Text: the person brushes themselves off, walks to the right and t-poses.
+   Compound Verb: bend-brush-make-raise-sit-stand-take-turn-walk
+
+106. Sample: M013671
+   Text: a man jumps up and down with arms stiffly at his sides.
+   Compound Verb: jump
+
+107. Sample: M013780
+   Text: a persons leans over and wipes an object with there right hand. they then straighten back up and takes a step back.
+   Compound Verb: bend-lean-move-stabilize-straighten-stretch-take-wipe
+
+108. Sample: M014119
+   Text: man stands in s defensive stance with left leg in front and right leg behind and punches fast in front of him with his right arm then goes back into his stance.
+   Compound Verb: go-hit-stand-throw
+
+109. Sample: M_001995
+   Text: a person brings their arms down
+   Compound Verb: bring-go-lower-make-place-reach-stand
+
+110. Sample: O_011561
+   Text: the sim appears to be sitting down with both hands up, rocking and swaying a bit with their hands extended toward their head.
+   Compound Verb: appear-extend-left-move-raise-rock-sit-sway
+
+111. Sample: P_M003293
+   Text: a man lowers his outstretched hands down to his sides.
+   Compound Verb: left-lower-reach-take-type
+
+112. Sample: R_005895
+   Text: a person walks forward, leans down to pick something up with their right hand, and then unscrews the lid
+   Compound Verb: begin-clean-grab-lean-pick-polish-take-turn-unscrew-walk-wipe
+
+113. Sample: T_M000387
+   Text: a person scratches their aim
+   Compound Verb: bend-lay-left-lift-lower-place-raise-scratch-seem-support-tilt
+
+114. Sample: W_003006
+   Text: a person lifts up his left arm and wriggles it around, and he gestures to his left arm with his right hand, then he wriggles both arms side to side, lifts them up
+   Compound Verb: come-gesture-go-hold-lift-limber-shake-side-start-wriggle
+

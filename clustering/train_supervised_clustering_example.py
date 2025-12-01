@@ -26,31 +26,54 @@ import seaborn as sns
 from collections import Counter
 
 
-def load_clustering_data(data_dir='clustering/outputs'):
-    """Load embeddings and labels from clustering analysis"""
-    
+def load_clustering_data(
+    data_dir: str = "clustering/outputs",
+    embeddings_file: str = "encoder_embeddings.npy",
+    labels_file: str = "verb_cluster_labels.npy",
+    kmeans_labels_file: str = "cluster_labels.npy",
+):
+    """
+    Load embeddings and labels from clustering analysis.
+
+    This function is flexible enough to support:
+      - Legacy setup: encoder_embeddings.npy + verb_cluster_labels.npy
+      - New setup: embeddings_processed.npy + cluster_labels_denoised.npy
+    """
+
     print(f"Loading data from {data_dir}...")
-    
+
     # Load embeddings
-    embeddings = np.load(f'{data_dir}/encoder_embeddings.npy')
-    print(f"Loaded embeddings: {embeddings.shape}")
-    
-    # Aggregate over time dimension (mean pooling)
-    embeddings_agg = embeddings.mean(axis=1)
-    print(f"Aggregated embeddings: {embeddings_agg.shape}")
-    
-    # Load verb-based cluster labels
-    verb_labels = np.load(f'{data_dir}/verb_cluster_labels.npy')
-    print(f"Loaded verb labels: {verb_labels.shape}")
-    print(f"Number of unique verb clusters: {len(np.unique(verb_labels))}")
-    
-    # Load K-means labels (for comparison)
-    kmeans_labels = np.load(f'{data_dir}/cluster_labels.npy')
-    
+    emb_path = f"{data_dir}/{embeddings_file}"
+    embeddings = np.load(emb_path)
+    print(f"Loaded embeddings: {embeddings.shape} from {emb_path}")
+
+    # Aggregate over time dimension (mean pooling) only if 3D (N, T, D)
+    if embeddings.ndim == 3:
+        embeddings_agg = embeddings.mean(axis=1)
+        print(f"Aggregated embeddings (mean over time): {embeddings_agg.shape}")
+    else:
+        embeddings_agg = embeddings
+        print(f"Using embeddings as-is (2D): {embeddings_agg.shape}")
+
+    # Load primary labels (verb- or cluster-based)
+    labels_path = f"{data_dir}/{labels_file}"
+    verb_labels = np.load(labels_path)
+    print(f"Loaded labels from {labels_path}: {verb_labels.shape}")
+    print(f"Number of unique labels: {len(np.unique(verb_labels))}")
+
+    # Load optional K-means labels (for comparison)
+    kmeans_labels = None
+    kmeans_path = f"{data_dir}/{kmeans_labels_file}" if kmeans_labels_file else None
+    if kmeans_path and os.path.exists(kmeans_path):
+        kmeans_labels = np.load(kmeans_path)
+
     # Load text descriptions (optional)
-    with open(f'{data_dir}/texts.txt', 'r') as f:
-        texts = f.read().strip().split('\n')
-    
+    texts_path = f"{data_dir}/texts.txt"
+    texts = []
+    if os.path.exists(texts_path):
+        with open(texts_path, "r") as f:
+            texts = f.read().strip().split("\n")
+
     return embeddings_agg, verb_labels, kmeans_labels, texts
 
 
@@ -256,8 +279,26 @@ def main():
     parser = argparse.ArgumentParser(
         description='Train supervised/semi-supervised models using verb cluster labels'
     )
-    parser.add_argument('--data-dir', default='./cluster_analysis', type=str,
+    parser.add_argument('--data-dir', default='clustering/outputs', type=str,
                        help='Directory containing clustering results')
+    parser.add_argument(
+        '--embeddings-file',
+        default='embeddings_processed.npy',
+        type=str,
+        help='NumPy file with embeddings (e.g., embeddings_processed.npy or encoder_embeddings.npy)',
+    )
+    parser.add_argument(
+        '--labels-file',
+        default='cluster_labels_denoised.npy',
+        type=str,
+        help='NumPy file with labels (e.g., cluster_labels_denoised.npy or verb_cluster_labels.npy)',
+    )
+    parser.add_argument(
+        '--kmeans-labels-file',
+        default='cluster_labels.npy',
+        type=str,
+        help='Optional NumPy file with K-Means labels for comparison (cluster_labels.npy)',
+    )
     parser.add_argument('--classifier', default='random_forest',
                        choices=['random_forest', 'gradient_boosting', 'logistic', 'svm'],
                        help='Classifier type for supervised learning')
@@ -271,7 +312,12 @@ def main():
     args = parser.parse_args()
     
     # Load data
-    embeddings, verb_labels, kmeans_labels, texts = load_clustering_data(args.data_dir)
+    embeddings, verb_labels, kmeans_labels, texts = load_clustering_data(
+        args.data_dir,
+        embeddings_file=args.embeddings_file,
+        labels_file=args.labels_file,
+        kmeans_labels_file=args.kmeans_labels_file,
+    )
     
     # Analyze label distribution
     analyze_label_distribution(verb_labels)
@@ -300,7 +346,7 @@ def main():
         )
     
     # 3. Compare with K-means
-    if args.compare_kmeans:
+    if args.compare_kmeans and kmeans_labels is not None:
         print(f"\n{'='*80}")
         print("EXPERIMENT 3: Comparison with Unsupervised K-means")
         print(f"{'='*80}")

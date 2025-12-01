@@ -1,610 +1,1506 @@
 
 ================================================================================
-K-Means Cluster 0 - 25 samples (2.9%)
+HDBSCAN Noise Points - 114 samples (13.1%)
+================================================================================
+
+These samples were not assigned to any cluster.
+
+================================================================================
+HDBSCAN Cluster 0 (walk) - 98 samples (11.2%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. he starts to strech a lot
-  2. a person walks a path that bends to the right.
-  3. a person walks to his right.
-  4. a man stretches his leg.
-  5. teh man steps backward and sits then stand and takes a few steps forward.
-  6. a person makes brushing motions with their hands, bends slightly, turns, and walks in an arc.
-  7. a person faces to the right, raises their hands to the center of their chest, steps back on the left food and draws back the left hand preparing to throw something, then shifts left hip and body forward, throws with a follow-through, then picks up right leg, grabbing the right foot with the left arm.
-  8. a person gestures to the ground, and then to the right, and then back to the ground
-  9. a man picks up, holds to his ear, then hangs up a phone with his right hand.
-  10. a person grabbed something and put it somewhere
+  1. someone walks slowly clockwise in a complete circle and then stops.
+  2. the person is stepping down stairs.
+  3. a person jogging in circle's
+  4. a figure walks to diagonal to the left turns around an walks up to the right and then back to quarter to the forward.
+  5. a person walks forward, turns around to his right and then walks back to where he started
+  6. a man walks in a circle before stopping.
+  7. a person holds a railing while walking backwards up stairs, then turns around and holds the railing and walks backwards down the same stairs.
+  8. person nearly walks in a full circle clockwise
+  9. a person walks up and down the stairs .
+  10. a person walks, swinging their hips and arms side to side, then walks back.
 
 Most frequently used codebook entries:
-  Code 150: used    96 times (7.8%)
-  Code   9: used    87 times (7.1%)
-  Code 370: used    40 times (3.3%)
-  Code 436: used    31 times (2.5%)
-  Code 266: used    29 times (2.4%)
-  Code 433: used    27 times (2.2%)
-  Code 173: used    27 times (2.2%)
-  Code 328: used    26 times (2.1%)
-  Code 279: used    23 times (1.9%)
-  Code 128: used    23 times (1.9%)
+  Code 150: used   795 times (16.6%)
+  Code   8: used    79 times (1.6%)
+  Code 220: used    77 times (1.6%)
+  Code 135: used    71 times (1.5%)
+  Code 433: used    66 times (1.4%)
+  Code  31: used    61 times (1.3%)
+  Code 462: used    59 times (1.2%)
+  Code 140: used    46 times (1.0%)
+  Code 405: used    46 times (1.0%)
+  Code 192: used    42 times (0.9%)
 
-Codebook diversity: 241/512 codes used
+Codebook diversity: 320/512 codes used
 
-Verb label distribution in this cluster:
-  lean-put-shift-start-strech-stretch-swing:   1 samples (4.0%)
-  bend-take-turn-walk           :   1 samples (4.0%)
-  walk                          :   1 samples (4.0%)
-  do-grab-pull-stand-stretch    :   1 samples (4.0%)
-  get-sit-stand-step-take-turn-wait-walk:   1 samples (4.0%)
-  bend-brush-make-raise-sit-stand-take-turn-walk:   1 samples (4.0%)
-  draw-face-get-grab-hold-kick-left-lift-pick-prepare-raise-shift-step-throw:   1 samples (4.0%)
-  gesture-hold-move-pick-put    :   1 samples (4.0%)
-  hang-hold-lift-pick-put-turn  :   1 samples (4.0%)
-  grab-lift-make-move-put       :   1 samples (4.0%)
+Atomic verb distribution in this cluster:
+  walk                :   90 occurrences
+  turn                :   46 occurrences
+  stop                :   14 occurrences
+  left                :   13 occurrences
+  start               :   12 occurrences
+  stand               :   12 occurrences
+  spin                :   12 occurrences
+  hold                :   10 occurrences
+  come                :   10 occurrences
+  take                :    8 occurrences
+  step                :    6 occurrences
+  make                :    6 occurrences
+  swinge              :    6 occurrences
+  climb               :    6 occurrences
+  pace                :    6 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  turn-walk                               :    7 samples (7.1%)
+  walk                                    :    5 samples (5.1%)
+  stop-walk                               :    4 samples (4.1%)
+  climb-hold-turn-walk                    :    4 samples (4.1%)
+  do-jump-kick-practice-stand             :    4 samples (4.1%)
+  left-turn-walk                          :    3 samples (3.1%)
+  stand-walk                              :    3 samples (3.1%)
+  hold-step-use-walk                      :    2 samples (2.0%)
+  jog-make-run                            :    2 samples (2.0%)
+  diagonal-turn-walk                      :    2 samples (2.0%)
+  start-turn-walk                         :    2 samples (2.0%)
+  hold-turn-walk                          :    2 samples (2.0%)
+  come-side-start-swinge-turn-walk        :    2 samples (2.0%)
+  swinge-walk                             :    2 samples (2.0%)
+  left-pace-return-start-walk             :    2 samples (2.0%)
 
 ================================================================================
-K-Means Cluster 1 - 22 samples (2.5%)
+HDBSCAN Cluster 1 (raise) - 30 samples (3.4%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. a person walks towards his left.
-  2. a man stretches his leg.
-  3. a person is sitting down while brushing off their clothes, then stands up, turns counter- clockwise, takes a few steps and raises their arms straight out like a "t".
-  4. a person faces to the left, raises their hands to the center of their chest, steps back on the right food and draws back the right hand preparing to throw something, then shifts right hip and body forward, throws with a follow-through, then picks up left leg, grabbing the left foot with the right arm.
-  5. person picks up something, holds it, then puts it back down
-  6. a person picks up an object and holds it.
-  7. person lowers arms and picks something up with right hand and moves right hand up and to sides
-  8. a person picks up something, shakes it, pours something, and sets it back down.
-  9. a person grabs something with his right hand, turns to the left, and wipes it on something else.
-  10. a man leans forward and then rears back to throw with his right arm, he throws again.
+  1. a man raises his arms and then puts his hands on his knees.
+  2. this person was moving their arms as if playing the piano
+  3. a person spreads out both arms and brings them up to shoulder height, puts them down, and then brings them up again.
+  4. a person is slightly crouched and then raises their arms
+  5. a person lowers their hands and then raises them again to a t-position.
+  6. a person moves to put their hands on their thighs, then stretches their arms back out to the side.
+  7. the person has their hands on their knees while slightly crouching, and then t-poses.
+  8. a person squatting slightly , then lifting both right and left arms above them.
+  9. he stood in a squated stance before raising both of his arms.
+  10. a person raised the right hand and showed some jesture
 
 Most frequently used codebook entries:
-  Code  56: used    81 times (7.5%)
-  Code 150: used    62 times (5.8%)
-  Code 336: used    40 times (3.7%)
-  Code 279: used    32 times (3.0%)
-  Code 434: used    30 times (2.8%)
-  Code 447: used    29 times (2.7%)
-  Code  36: used    28 times (2.6%)
-  Code  49: used    26 times (2.4%)
-  Code 301: used    21 times (1.9%)
-  Code 132: used    20 times (1.9%)
-
-Codebook diversity: 219/512 codes used
-
-Verb label distribution in this cluster:
-  bend-take-turn-walk           :   1 samples (4.5%)
-  do-grab-pull-stand-stretch    :   1 samples (4.5%)
-  bend-brush-make-raise-sit-stand-take-turn-walk:   1 samples (4.5%)
-  draw-face-get-grab-hold-kick-lift-pick-prepare-raise-shift-step-throw:   1 samples (4.5%)
-  gesture-hold-move-pick-put    :   1 samples (4.5%)
-  hang-hold-lift-pick-put-turn  :   1 samples (4.5%)
-  dry-lower-move-pick-transfer-use-wash:   1 samples (4.5%)
-  move-pick-pour-set-shake      :   1 samples (4.5%)
-  begin-clean-grab-lean-pick-polish-take-turn-unscrew-walk-wipe:   1 samples (4.5%)
-  get-give-hit-lean-rear-throw  :   1 samples (4.5%)
-
-================================================================================
-K-Means Cluster 2 - 30 samples (3.4%)
-================================================================================
-
-Sample descriptions (first 10):
-  1. a man is sitting on something at waist height, lowers his arms to his lap, then stretches them back out to his sides at shoulder-height.
-  2. the man drops his hands to his knees then raises them again.
-  3. a person squatting slightly , then lifting both right and left arms above them.
-  4. a person squatting slightly , then lifting both left and right arms above them.
-  5. a body is squated raising both arms up in position for ten seconds & then releases.
-  6. a body is squated raising both arms up in position for ten seconds & then releases.
-  7. a person remains sitting down the entire time.
-  8. the person is stretching his arms out wide
-  9. a person is slightly crouched and then raises their arms
-  10. a person stretches both of their arms out to the side.
-
-Most frequently used codebook entries:
-  Code 502: used   670 times (45.6%)
-  Code 205: used   178 times (12.1%)
-  Code  13: used   176 times (12.0%)
-  Code 397: used   138 times (9.4%)
+  Code 502: used   667 times (45.4%)
+  Code 205: used   180 times (12.2%)
+  Code  13: used   173 times (11.8%)
+  Code 397: used   143 times (9.7%)
   Code 109: used   119 times (8.1%)
-  Code 150: used    33 times (2.2%)
-  Code 182: used    28 times (1.9%)
-  Code 282: used    16 times (1.1%)
-  Code 290: used    11 times (0.7%)
-  Code  11: used     9 times (0.6%)
+  Code 182: used    33 times (2.2%)
+  Code 150: used    27 times (1.8%)
+  Code 282: used    15 times (1.0%)
+  Code 290: used    10 times (0.7%)
+  Code  53: used     9 times (0.6%)
 
-Codebook diversity: 47/512 codes used
+Codebook diversity: 44/512 codes used
 
-Verb label distribution in this cluster:
-  drop-lower-put-raise-side-sit-stand-stretch:   2 samples (6.7%)
-  unknown                       :   2 samples (6.7%)
-  move-put-remain-sit-stretch   :   2 samples (6.7%)
-  crouch-lower-raise-stand-streche-stretch:   2 samples (6.7%)
-  crouch-put-side-wipe          :   2 samples (6.7%)
-  bring-lift-put-raise-release-spread-squat-stand:   2 samples (6.7%)
-  back-bring-extend-lower-place-raise-return-start-stretch:   2 samples (6.7%)
-  bring-put-raise-squat-stand   :   2 samples (6.7%)
-  believe-can-happen-seem-sit-stand:   2 samples (6.7%)
-  arm-place-raise-sit           :   2 samples (6.7%)
+Atomic verb distribution in this cluster:
+  raise               :   20 occurrences
+  put                 :   14 occurrences
+  stand               :   14 occurrences
+  sit                 :   10 occurrences
+  lift                :    8 occurrences
+  move                :    8 occurrences
+  bring               :    8 occurrences
+  squat               :    8 occurrences
+  stretch             :    8 occurrences
+  crouch              :    6 occurrences
+  lower               :    6 occurrences
+  return              :    4 occurrences
+  wave                :    4 occurrences
+  release             :    4 occurrences
+  spread              :    4 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  bring-lift-put-raise-release-spread-squat-stand:    4 samples (13.3%)
+  lift-outstretche-put-raise-return-sit   :    2 samples (6.7%)
+  left-move-play-wave                     :    2 samples (6.7%)
+  crouch-lower-raise-stand-streche-stretch:    2 samples (6.7%)
+  back-bring-extend-lower-place-raise-return-start-stretch:    2 samples (6.7%)
+  move-put-remain-sit-stretch             :    2 samples (6.7%)
+  crouch-put-side-wipe                    :    2 samples (6.7%)
+  bring-put-raise-squat-stand             :    2 samples (6.7%)
+  catch-move-raise-show                   :    2 samples (6.7%)
+  move-raise-stand-wave                   :    2 samples (6.7%)
+  believe-can-happen-seem-sit-stand       :    2 samples (6.7%)
+  drop-lower-put-raise-side-sit-stand-stretch:    2 samples (6.7%)
+  arm-place-raise-sit                     :    2 samples (6.7%)
+  crouch-do-left-lift-squat               :    1 samples (3.3%)
+  crouch-do-lift-squat                    :    1 samples (3.3%)
 
 ================================================================================
-K-Means Cluster 3 - 33 samples (3.8%)
+HDBSCAN Cluster 2 (walk) - 24 samples (2.8%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. a person does jumping jacks.
-  2. person doing three full jumping jack exercise
-  3. a person jumps, landing in a squat position, and jumps again reaching upwards with their arms.
-  4. a person runs in place.
-  5. a person is tap dancing
-  6. a person kicks with their left leg, does a jig with both feet, and slides forward and kicks with each foot.
-  7. a side person side-steps to the right, then side-steps to the left.
-  8. a side person side-steps to the left, then side-steps to the right.
-  9. person is doing a hand stand
-  10. a person puts its hands on the floor and does a handstand.
+  1. he walks slowly downstairs directly
+  2. a man carefully walks downstairs backwards
+  3. a person walking down an elevated surface
+  4. a person walks backwards down stairs.
+  5. a man walks forward in a straight line.
+  6. a person walks up stairs.
+  7. a person walks forward with their arms to their side.
+  8. person jumps in air, then walks up stairs
+  9. walking forward and then stopping.
+  10. a person walks down stairs.
 
 Most frequently used codebook entries:
-  Code 150: used   274 times (16.9%)
-  Code 204: used    29 times (1.8%)
-  Code 220: used    25 times (1.5%)
-  Code 350: used    21 times (1.3%)
-  Code 433: used    21 times (1.3%)
-  Code 421: used    20 times (1.2%)
-  Code   1: used    19 times (1.2%)
-  Code 462: used    19 times (1.2%)
-  Code  53: used    19 times (1.2%)
-  Code 497: used    17 times (1.1%)
+  Code 150: used   228 times (19.4%)
+  Code 484: used   117 times (9.9%)
+  Code 405: used    86 times (7.3%)
+  Code 408: used    38 times (3.2%)
+  Code  53: used    28 times (2.4%)
+  Code 167: used    24 times (2.0%)
+  Code 301: used    22 times (1.9%)
+  Code 357: used    20 times (1.7%)
+  Code 290: used    18 times (1.5%)
+  Code 384: used    16 times (1.4%)
+
+Codebook diversity: 149/512 codes used
+
+Atomic verb distribution in this cluster:
+  walk                :   24 occurrences
+  take                :    6 occurrences
+  stop                :    6 occurrences
+  begin               :    4 occurrences
+  jump                :    4 occurrences
+  place               :    2 occurrences
+  slide               :    2 occurrences
+  step                :    2 occurrences
+  descend             :    2 occurrences
+  end                 :    2 occurrences
+  lift                :    2 occurrences
+  stick               :    2 occurrences
+  hop                 :    2 occurrences
+  steady              :    2 occurrences
+  use                 :    2 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  walk                                    :   10 samples (41.7%)
+  place-slide-take-walk                   :    2 samples (8.3%)
+  step-stop-walk                          :    2 samples (8.3%)
+  begin-descend-end-take-walk             :    2 samples (8.3%)
+  lift-stick-stop-walk                    :    2 samples (8.3%)
+  hop-jump-steady-use-walk                :    2 samples (8.3%)
+  stop-walk                               :    2 samples (8.3%)
+  begin-climb-hold-jump-make-spread-take-walk:    1 samples (4.2%)
+  begin-climb-hold-jump-left-make-spread-take-walk:    1 samples (4.2%)
+
+================================================================================
+HDBSCAN Cluster 3 (walk) - 38 samples (4.4%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. a person walking forward, avoiding obstacles on the floor.
+  2. someone is walking down holding a beam on their right side
+  3. a person walks to his left and uses a table to support himself with his left hand.
+  4. person steps six  steps to front
+  5. the person is running around side to side.
+  6. a person walks down the stairs while using their right hand for support on the hand rail.
+  7. the person is jogging lightly
+  8. a person walks forward while holding their arms out to the side.
+  9. a man walks forward slowly and calmly.
+  10. a man steps up, walks forward and then steps down.
+
+Most frequently used codebook entries:
+  Code 150: used   612 times (32.9%)
+  Code  28: used    49 times (2.6%)
+  Code 220: used    43 times (2.3%)
+  Code 263: used    40 times (2.1%)
+  Code  53: used    33 times (1.8%)
+  Code 462: used    30 times (1.6%)
+  Code 192: used    25 times (1.3%)
+  Code  30: used    24 times (1.3%)
+  Code  44: used    23 times (1.2%)
+  Code 340: used    23 times (1.2%)
+
+Codebook diversity: 184/512 codes used
+
+Atomic verb distribution in this cluster:
+  walk                :   34 occurrences
+  hold                :   14 occurrences
+  step                :   12 occurrences
+  place               :    8 occurrences
+  appear              :    8 occurrences
+  take                :    6 occurrences
+  balance             :    6 occurrences
+  use                 :    6 occurrences
+  stand               :    6 occurrences
+  seem                :    4 occurrences
+  run                 :    4 occurrences
+  turn                :    4 occurrences
+  start               :    4 occurrences
+  try                 :    4 occurrences
+  left                :    3 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  avoid-creep-take-walk                   :    2 samples (5.3%)
+  balance-hold-place-seem-walk            :    2 samples (5.3%)
+  lean-place-support-use-walk             :    2 samples (5.3%)
+  front-step-walk                         :    2 samples (5.3%)
+  run-side-turn                           :    2 samples (5.3%)
+  go-jog-run-start                        :    2 samples (5.3%)
+  appear-hold-maintain-outstretche-place-start-walk:    2 samples (5.3%)
+  walk                                    :    2 samples (5.3%)
+  climb-step-take-walk                    :    2 samples (5.3%)
+  appear-balance-feel-help-hold-use-walk  :    2 samples (5.3%)
+  extend-hold-lead-replace-turn-walk      :    2 samples (5.3%)
+  balance-extene-follow-seem-stand-step-try-walk:    2 samples (5.3%)
+  stop-walk                               :    2 samples (5.3%)
+  grab-hold-walk                          :    2 samples (5.3%)
+  appear-hold-step-walk                   :    2 samples (5.3%)
+
+================================================================================
+HDBSCAN Cluster 4 (get) - 34 samples (3.9%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. a person crawls in a forward direction and then turns counterclockwise
+  2. a person gets on the ground and crawls in and returns to get up.
+  3. a person sits down criss cross style and then begins to get back up.
+  4. robot is trying hard to sit with legs crossed and then stands up.
+  5. a figure lying on its back pulls up its legs and raises its torso, then using hands and arms pushes itself to a crouching position on both feet with arms resting on legs and hands relaxed between legs.
+  6. a person sits down, then gets back up.
+  7. a person crawls on their hands and knees, then stands up.
+  8. a person sits down with crossed legs. then stands up.
+  9. a person gets down on their hands and knees and crawls around, then gets back up.
+  10. a person gets down on all fours, crawls to the right and then to the left before standing back up.
+
+Most frequently used codebook entries:
+  Code 150: used   137 times (8.2%)
+  Code  45: used    88 times (5.3%)
+  Code  17: used    76 times (4.6%)
+  Code 449: used    67 times (4.0%)
+  Code 322: used    60 times (3.6%)
+  Code 430: used    55 times (3.3%)
+  Code 257: used    53 times (3.2%)
+  Code 472: used    42 times (2.5%)
+  Code 286: used    41 times (2.5%)
+  Code 255: used    39 times (2.3%)
 
 Codebook diversity: 263/512 codes used
 
-Verb label distribution in this cluster:
-  unknown                       :   5 samples (15.2%)
-  do-jump                       :   2 samples (6.1%)
-  appear-kick-slide             :   2 samples (6.1%)
-  do-put                        :   2 samples (6.1%)
-  jump-open-return-start        :   2 samples (6.1%)
-  cross-face-left-make-sidestep-start-stop-walk:   2 samples (6.1%)
-  adjust-kick-raise-step-swing-take:   2 samples (6.1%)
-  do-shuffle                    :   2 samples (6.1%)
-  dance-hold-step               :   2 samples (6.1%)
-  do-practice                   :   2 samples (6.1%)
+Atomic verb distribution in this cluster:
+  get                 :   22 occurrences
+  crawl               :   20 occurrences
+  stand               :   20 occurrences
+  sit                 :   10 occurrences
+  cross               :    8 occurrences
+  crouch              :    8 occurrences
+  jump                :    6 occurrences
+  begin               :    4 occurrences
+  drop                :    4 occurrences
+  turn                :    4 occurrences
+  bend                :    4 occurrences
+  put                 :    4 occurrences
+  squat               :    4 occurrences
+  touch               :    4 occurrences
+  hold                :    4 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  crouch-hold-kneel-lie-pull-push-raise-rest-use:    4 samples (11.8%)
+  crawl-crouch-dash-fall-get-jump-lean-run-shift-spring-take:    4 samples (11.8%)
+  crawl-get-stand-turn                    :    2 samples (5.9%)
+  begin-cross-get-sit-stand               :    2 samples (5.9%)
+  bend-cross-get-put-sit-squat-stand-touch-try:    2 samples (5.9%)
+  get-look-sit-stand                      :    2 samples (5.9%)
+  crawl-stand                             :    2 samples (5.9%)
+  cross-lower-sit-stand                   :    2 samples (5.9%)
+  assume-crawl-get                        :    2 samples (5.9%)
+  crawl-get-stand-start                   :    2 samples (5.9%)
+  crawl-drop-get-stand                    :    2 samples (5.9%)
+  balance-bend-cross-put-reach-sit-squat-stand-touch-write:    2 samples (5.9%)
+  crawl                                   :    2 samples (5.9%)
+  back-crawl-cut-get-jump-resume-stand-step:    2 samples (5.9%)
+  begin-crawl-drop-get-left-turn          :    1 samples (2.9%)
 
 ================================================================================
-K-Means Cluster 4 - 9 samples (1.0%)
+HDBSCAN Cluster 5 (squat) - 47 samples (5.4%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. a person gets on the ground and crawls in and returns to get up.
-  2. a man drops to the ground and begins crawling on his knees, first to the right, then to the left.
-  3. a person is crawling slowly backwards.
-  4. a man sits down before getting back up.
-  5. a man drops to the ground and begins crawling on his knees, first to the left, then to the right.
-  6. a person leaned on hends and strat to jump
-  7. crawling around then jumping up and running.
-  8. person is crawling backwards on their hands and knees
-  9. the man crawls forwards before jumping back up into a standing position.
+  1. person crouches and rotates hands and legs
+  2. a person walks backwards and sits down, then stands up and walks forward.
+  3. a man stands on the ground and squats with his arms stretched  foward.
+  4. a person in a squatting position moves his arms one at a time
+  5. the stick figure is in a squat postition dancing.
+  6. a figure kneels with the support of arms.
+  7. a persons carefully going down to their knees.
+  8. a person kneeling on the ground stands up
+  9. person lifts both hands up and then down, then kneels with the left leg first helping himself with the right hand and then the right leg
+  10. the person was kneeling and got up using his left hand.
 
 Most frequently used codebook entries:
-  Code  45: used    37 times (8.4%)
-  Code 261: used    27 times (6.1%)
-  Code 449: used    25 times (5.7%)
-  Code 236: used    25 times (5.7%)
-  Code 472: used    24 times (5.4%)
-  Code 255: used    21 times (4.8%)
-  Code 134: used    18 times (4.1%)
-  Code  17: used    12 times (2.7%)
-  Code 286: used    11 times (2.5%)
-  Code 424: used     9 times (2.0%)
+  Code 150: used   827 times (35.9%)
+  Code 218: used   102 times (4.4%)
+  Code 291: used    62 times (2.7%)
+  Code 104: used    54 times (2.3%)
+  Code  86: used    50 times (2.2%)
+  Code 318: used    44 times (1.9%)
+  Code  53: used    42 times (1.8%)
+  Code 433: used    34 times (1.5%)
+  Code  13: used    32 times (1.4%)
+  Code 197: used    32 times (1.4%)
 
-Codebook diversity: 106/512 codes used
+Codebook diversity: 231/512 codes used
 
-Verb label distribution in this cluster:
-  crawl                         :   2 samples (22.2%)
-  crawl-get-stand-turn          :   1 samples (11.1%)
-  begin-crawl-drop-get-left-turn:   1 samples (11.1%)
-  begin-cross-get-sit-stand     :   1 samples (11.1%)
-  begin-crawl-drop-get-turn     :   1 samples (11.1%)
-  unknown                       :   1 samples (11.1%)
-  crawl-crouch-dash-fall-get-jump-lean-run-shift-spring-take:   1 samples (11.1%)
-  back-crawl-cut-get-jump-resume-stand-step:   1 samples (11.1%)
+Atomic verb distribution in this cluster:
+  squat               :   20 occurrences
+  stand               :   18 occurrences
+  sit                 :   16 occurrences
+  kneel               :   16 occurrences
+  hold                :   12 occurrences
+  lift                :   12 occurrences
+  move                :   11 occurrences
+  get                 :    9 occurrences
+  bend                :    9 occurrences
+  help                :    8 occurrences
+  raise               :    8 occurrences
+  reach               :    8 occurrences
+  step                :    6 occurrences
+  take                :    6 occurrences
+  go                  :    4 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  help-hold-kneel-lift-raise-reach        :    6 samples (12.8%)
+  come-squat-stand-stretch                :    4 samples (8.5%)
+  appear-hold-lift-squat-stand            :    4 samples (8.5%)
+  move-perform-squat-step-widen           :    4 samples (8.5%)
+  bend-fight-get-hit-lunge-make-move-rest-spinne-swing-wave:    3 samples (6.4%)
+  back-go-rotate-sit-squat-think-type     :    2 samples (4.3%)
+  get-sit-stand-step-take-turn-wait-walk  :    2 samples (4.3%)
+  move-sit-squat-turn                     :    2 samples (4.3%)
+  eat-shake-sit-squat                     :    2 samples (4.3%)
+  get-go-kneel-steady-take-use            :    2 samples (4.3%)
+  kneel-stand-start                       :    2 samples (4.3%)
+  bend-get-help-kneel-lift-stand-use      :    2 samples (4.3%)
+  clap-sit-take-walk                      :    2 samples (4.3%)
+  drive-lounge-put-reach-seat-sit         :    2 samples (4.3%)
+  hold-move-raise-sit                     :    2 samples (4.3%)
 
 ================================================================================
-K-Means Cluster 5 - 9 samples (1.0%)
+HDBSCAN Cluster 6 (walk) - 16 samples (1.8%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. the person is stepping down stairs.
-  2. a figure climbing up stairs and climbing back down them
-  3. a figure climbing up stairs and climbing back down them
-  4. a person holds a railing while walking backwards up stairs, then turns around and holds the railing and walks backwards down the same stairs.
-  5. a person walks up and then down stairs
-  6. a person walks up a set of stairs, turns around, and walks back down.
-  7. a person is walking up something then turns around and walks back down.
-  8. robot walking up the stairs, turned back and then walk down the stairs.
-  9. a person is walking up something then turns around and walks back down.
+  1. a person walks right to left diagonally swinging his left arm and then walks back.
+  2. a personal casually walks forward, curves their path to their left and comes to a stop standing.
+  3. a person walks a path that bends to the left.
+  4. a man walks down a slope and then turns counterclockwise
+  5. a person is walking while holding a handrail at each side
+  6. this person is walking to his left.
+  7. a person walks from the back left of a location to the top right of the same location in a smooth circular motion
+  8. a person walks forward into a left turn.
+  9. a man walks forwards while taking a gradual left turn.
+  10. a man walks slowly with both hands on railing.
 
 Most frequently used codebook entries:
-  Code 405: used    44 times (10.0%)
-  Code 484: used    28 times (6.3%)
-  Code 408: used    25 times (5.7%)
-  Code 371: used    24 times (5.4%)
-  Code   8: used    22 times (5.0%)
-  Code 135: used    17 times (3.9%)
-  Code  31: used    14 times (3.2%)
-  Code 150: used    13 times (2.9%)
-  Code 220: used     8 times (1.8%)
-  Code 167: used     8 times (1.8%)
+  Code 150: used   289 times (36.9%)
+  Code 462: used    34 times (4.3%)
+  Code 336: used    30 times (3.8%)
+  Code 474: used    23 times (2.9%)
+  Code 421: used    22 times (2.8%)
+  Code 264: used    15 times (1.9%)
+  Code 192: used    14 times (1.8%)
+  Code 220: used    11 times (1.4%)
+  Code 418: used    10 times (1.3%)
+  Code 159: used    10 times (1.3%)
 
-Codebook diversity: 125/512 codes used
+Codebook diversity: 133/512 codes used
 
-Verb label distribution in this cluster:
-  unknown                       :   2 samples (22.2%)
-  hold-turn-walk                :   2 samples (22.2%)
-  turn-walk                     :   2 samples (22.2%)
-  climb-hold-turn-walk          :   2 samples (22.2%)
-  hold-step-use-walk            :   1 samples (11.1%)
+Atomic verb distribution in this cluster:
+  walk                :   16 occurrences
+  turn                :    5 occurrences
+  take                :    4 occurrences
+  left                :    2 occurrences
+  come                :    2 occurrences
+  curve               :    2 occurrences
+  stand               :    2 occurrences
+  bend                :    2 occurrences
+  hold                :    2 occurrences
+  make                :    2 occurrences
+  swinge              :    1 occurrences
+  help                :    1 occurrences
+  use                 :    1 occurrences
+  move                :    1 occurrences
+  change              :    1 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  walk                                    :    2 samples (12.5%)
+  left-swinge-turn-walk                   :    1 samples (6.2%)
+  come-curve-stand-walk                   :    1 samples (6.2%)
+  bend-take-turn-walk                     :    1 samples (6.2%)
+  bend-curve-left-turn-walk               :    1 samples (6.2%)
+  help-hold-use-walk                      :    1 samples (6.2%)
+  move-take-walk                          :    1 samples (6.2%)
+  come-make-walk                          :    1 samples (6.2%)
+  change-do-walk                          :    1 samples (6.2%)
+  continue-take-turn-walk                 :    1 samples (6.2%)
+  grab-hold-rail-walk                     :    1 samples (6.2%)
+  make-veer-walk                          :    1 samples (6.2%)
+  stand-walk                              :    1 samples (6.2%)
+  take-walk                               :    1 samples (6.2%)
+  turn-walk                               :    1 samples (6.2%)
 
 ================================================================================
-K-Means Cluster 6 - 46 samples (5.3%)
+HDBSCAN Cluster 7 (jump) - 39 samples (4.5%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. the person is wipin or moving something.
-  2. a person in a squatting position moves his arms one at a time
-  3. the body is in squatting position while the right arm goes toward the face and back down multiple times.
-  4. person crouches and rotates hands and legs
-  5. a figure is on its knees. it then bends its left knee in order to help lift itself up to a standing positon.
-  6. kneeling and then standing up.
-  7. a man stands for a second and then squats down then comes up
-  8. a man stands for a second and then squats down then comes up
-  9. a person takes a step forward, then kneels down with their right leg while using their right hand to steady himself.
-  10. a persons carefully going down to their knees.
+  1. a person does a handstand.
+  2. person doing three full jumping jack exercise
+  3. a person kicks with their right leg, does a jig with both feet, and slides forward and kicks with each foot.
+  4. a person jumps in the air multiple times
+  5. a person is dancing a waltz.
+  6. figure strafes 2 steps left, 4 steps right and 2 steps left again, stopping and starting in same position.
+  7. a person walks side by side horizontally.
+  8. a person steps sideways to their right, then they step sideways to their left, and they step sidewise right back to their original spot.
+  9. person does to side jumps keeping legs shoulder  length apart and moving arms from hips to above their head
+  10. a person does two jumping jacks.
 
 Most frequently used codebook entries:
-  Code 150: used   706 times (31.3%)
-  Code 218: used   103 times (4.6%)
-  Code  86: used    52 times (2.3%)
-  Code 104: used    50 times (2.2%)
-  Code 318: used    48 times (2.1%)
-  Code 291: used    45 times (2.0%)
-  Code  53: used    39 times (1.7%)
-  Code 220: used    34 times (1.5%)
-  Code 197: used    33 times (1.5%)
-  Code 198: used    27 times (1.2%)
+  Code 150: used   514 times (26.9%)
+  Code 433: used    35 times (1.8%)
+  Code 220: used    34 times (1.8%)
+  Code  53: used    28 times (1.5%)
+  Code  12: used    22 times (1.2%)
+  Code 339: used    22 times (1.2%)
+  Code 421: used    20 times (1.0%)
+  Code   1: used    18 times (0.9%)
+  Code 214: used    18 times (0.9%)
+  Code 216: used    16 times (0.8%)
 
-Codebook diversity: 237/512 codes used
+Codebook diversity: 261/512 codes used
 
-Verb label distribution in this cluster:
-  unknown                       :  12 samples (26.1%)
-  move-sit-squat-turn           :   2 samples (4.3%)
-  back-go-rotate-sit-squat-think-type:   2 samples (4.3%)
-  bend-get-help-kneel-lift-stand-use:   2 samples (4.3%)
-  get-go-kneel-steady-take-use  :   2 samples (4.3%)
-  appear-hold-lift-squat-stand  :   2 samples (4.3%)
-  kneel-stand-start             :   2 samples (4.3%)
-  come-squat-stand-stretch      :   2 samples (4.3%)
-  crouch-do-squat-stand         :   2 samples (4.3%)
-  drive-lounge-put-reach-seat-sit:   2 samples (4.3%)
+Atomic verb distribution in this cluster:
+  jump                :   11 occurrences
+  step                :   11 occurrences
+  do                  :   10 occurrences
+  start               :    6 occurrences
+  left                :    6 occurrences
+  sidestep            :    6 occurrences
+  walk                :    6 occurrences
+  dance               :    4 occurrences
+  hold                :    4 occurrences
+  stop                :    4 occurrences
+  shuffle             :    4 occurrences
+  move                :    4 occurrences
+  jog                 :    4 occurrences
+  run                 :    4 occurrences
+  appear              :    3 occurrences
 
-================================================================================
-K-Means Cluster 7 - 100 samples (11.5%)
-================================================================================
-
-Sample descriptions (first 10):
-  1. a person places both of their hands behind of their head.
-  2. person appears to lift some thing with both hands repeatedly above their head.
-  3. a person with their forearms upleft, rasies their arms 3 times.
-  4. a person lifts up only their left arm above shoulder height, lowers their left arm and lifts up both arms above shoulder height, lowers both arms and then lifts as high as they can before bringing both arms back down to shoulder height.
-  5. a person lifts up only their right arm above shoulder height, lowers their right arm and lifts up both arms above shoulder height, lowers both arms and then lifts as high as they can before bringing both arms back down to shoulder height.
-  6. the person is playing a guitar.
-  7. a person moving left arm up and the right arm up and then kicks right leg up and then return to position.
-  8. sit on the floor and moving the legs and hands .
-  9. a figure repeatedly curls both arms upward from waist to chest.
-  10. a person stands still lifting their forearms as if lifting weights.
-
-Most frequently used codebook entries:
-  Code 150: used   843 times (17.2%)
-  Code 300: used   343 times (7.0%)
-  Code 159: used   243 times (5.0%)
-  Code 233: used   174 times (3.6%)
-  Code 315: used   168 times (3.4%)
-  Code 423: used   130 times (2.7%)
-  Code 433: used   126 times (2.6%)
-  Code  53: used   126 times (2.6%)
-  Code 447: used   114 times (2.3%)
-  Code 462: used    93 times (1.9%)
-
-Codebook diversity: 194/512 codes used
-
-Verb label distribution in this cluster:
-  unknown                       :   6 samples (6.0%)
-  wave                          :   4 samples (4.0%)
-  appear-lift-outstretche-raise-rasie-return:   2 samples (2.0%)
-  bring-can-curl-lift-lower     :   2 samples (2.0%)
-  kick-left-move-return-sit-turn:   2 samples (2.0%)
-  curl-lift-stand               :   2 samples (2.0%)
-  play-raise-stroke-strum       :   2 samples (2.0%)
-  move-waive-wave               :   2 samples (2.0%)
-  bring-mirror-move-put-rotate-stand:   2 samples (2.0%)
-  catch-move-throw              :   2 samples (2.0%)
+Compound verb distribution in this cluster (top 15):
+  dance-hold-step                         :    4 samples (10.3%)
+  jog-run                                 :    4 samples (10.3%)
+  do-put                                  :    2 samples (5.1%)
+  do-jump                                 :    2 samples (5.1%)
+  appear-kick-slide                       :    2 samples (5.1%)
+  jump-open-return-start                  :    2 samples (5.1%)
+  cross-face-left-make-sidestep-start-stop-walk:    2 samples (5.1%)
+  sidestep-step                           :    2 samples (5.1%)
+  do-jump-keep-move-side-start-stretch-uplift-work:    2 samples (5.1%)
+  jump-perform-raise-spread               :    2 samples (5.1%)
+  do-practice                             :    2 samples (5.1%)
+  jump-land-reach-squat-step              :    2 samples (5.1%)
+  do-shuffle                              :    2 samples (5.1%)
+  left-sidestep-step                      :    2 samples (5.1%)
+  retrace-shuffle-strafe-walk             :    1 samples (2.6%)
 
 ================================================================================
-K-Means Cluster 8 - 61 samples (7.0%)
+HDBSCAN Cluster 8 (walk) - 12 samples (1.4%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. man walks forwards and turns counter clockwise and walks back
-  2. a person who was walking then did a swift turn to their right
-  3. a person walking straight and turns to the left
-  4. the man turns right at a normal pace
-  5. he turns left forward directally
-  6. a person walks and turns right to walk back the same way.
-  7. a person walks up and then turns around and walk\s back.
-  8. a person walks right, spins around and begins walking.
-  9. person walks forwards, stops, turns to the right, swiveling around, then walks back to the start.
-  10. a man walks forward turn around and walks back
-
-Most frequently used codebook entries:
-  Code 150: used   656 times (21.9%)
-  Code 220: used    69 times (2.3%)
-  Code 433: used    59 times (2.0%)
-  Code   8: used    50 times (1.7%)
-  Code 135: used    49 times (1.6%)
-  Code 140: used    42 times (1.4%)
-  Code  31: used    42 times (1.4%)
-  Code 462: used    40 times (1.3%)
-  Code 192: used    38 times (1.3%)
-  Code 357: used    34 times (1.1%)
-
-Codebook diversity: 292/512 codes used
-
-Verb label distribution in this cluster:
-  turn-walk                     :   4 samples (6.6%)
-  stop-walk                     :   4 samples (6.6%)
-  left-turn-walk                :   2 samples (3.3%)
-  swivel-turn-walk              :   2 samples (3.3%)
-  come-spin-turn-walk           :   2 samples (3.3%)
-  stand-start-step-swinge-turn-twirl-walk:   2 samples (3.3%)
-  start-turn-walk               :   2 samples (3.3%)
-  clockwise-walk                :   2 samples (3.3%)
-  come-spin-step-turn-walk      :   2 samples (3.3%)
-  return-take-walk              :   2 samples (3.3%)
-
-================================================================================
-K-Means Cluster 9 - 318 samples (36.5%)
-================================================================================
-
-Sample descriptions (first 10):
-  1. a person brings their arms down
-  2. with both arms outstretched at the side, bent at elbow, the person raises arms straight over head, before returning to orginal position
-  3. a individual is standing still then crosses both their let and right arms together before resting their arms at their sides again.
-  4. a person brings their arms down
-  5. with both arms outstretched at the side, bent at elbow, the person raises arms straight over head, before returning to orginal position
-  6. a individual is standing still then crosses both their let and left arms together before resting their arms at their sides again.
-  7. a person raises both hands above his head and throws something.
-  8. this person is standing straight and kicks his leg out once and then stands normal.
-  9. this person reaches high with both arms.
-  10. person does a low kick
-
-Most frequently used codebook entries:
-  Code 150: used  7992 times (51.3%)
-  Code 300: used   284 times (1.8%)
-  Code  53: used   263 times (1.7%)
-  Code 462: used   255 times (1.6%)
-  Code 159: used   200 times (1.3%)
-  Code 433: used   183 times (1.2%)
-  Code 256: used   164 times (1.1%)
-  Code 192: used   163 times (1.0%)
-  Code  16: used   158 times (1.0%)
-  Code 301: used   155 times (1.0%)
-
-Codebook diversity: 386/512 codes used
-
-Verb label distribution in this cluster:
-  unknown                       :  34 samples (10.7%)
-  walk                          :   7 samples (2.2%)
-  raise-reach-throw             :   2 samples (0.6%)
-  kick-scuff-stand              :   2 samples (0.6%)
-  drink-grab-hold-lift-open-put-reach-wipe:   2 samples (0.6%)
-  do-jump-squat-take            :   2 samples (0.6%)
-  hold-move-raise-sit           :   2 samples (0.6%)
-  appear-bend-bring-fight-hold-move:   2 samples (0.6%)
-  lift-look-put-rasie-return    :   2 samples (0.6%)
-  bend-extend-flex-move-repeat-stretch:   2 samples (0.6%)
-
-================================================================================
-K-Means Cluster 10 - 142 samples (16.3%)
-================================================================================
-
-Sample descriptions (first 10):
-  1. a man runs forward than turns to the right.
-  2. person runs a third of a circle counterclockwise
-  3. figure moves forward quickly, moving arms with every step, and stops.
-  4. a person runs forward, swinging their arms a little.
-  5. a person speed walking in a forward motion
-  6. a person speed walking in a forward motion
+  1. a person moves ahead a few steps quickly.
+  2. a person walks forward after standing still
+  3. a stick figure with no head walks forward with arms swinging, then stops.
+  4. a person walks forward quickly
+  5. a man runs forward several steps, stopping in a standing position.
+  6. a man walks forward slowly.
   7. stick figure stands still before taking a few jogging steps forward
-  8. a figure runs in place effortlessly.
-  9. stick figure stands still before taking a few jogging steps forward
-  10. a figure runs in place effortlessly.
+  8. a person moves ahead a few steps quickly.
+  9. the person walks a couple of steps starting with the right foot
+  10. a person walks forward quickly
 
 Most frequently used codebook entries:
-  Code 150: used  2887 times (41.5%)
-  Code 220: used   126 times (1.8%)
-  Code 462: used   110 times (1.6%)
-  Code  30: used    95 times (1.4%)
-  Code  53: used    91 times (1.3%)
-  Code 454: used    88 times (1.3%)
-  Code 192: used    83 times (1.2%)
-  Code 386: used    76 times (1.1%)
-  Code  28: used    75 times (1.1%)
-  Code 423: used    72 times (1.0%)
+  Code 150: used   280 times (47.6%)
+  Code 167: used    40 times (6.8%)
+  Code 488: used    30 times (5.1%)
+  Code 224: used    22 times (3.7%)
+  Code  16: used    21 times (3.6%)
+  Code 220: used    11 times (1.9%)
+  Code 462: used    10 times (1.7%)
+  Code 454: used     9 times (1.5%)
+  Code 290: used     8 times (1.4%)
+  Code  25: used     6 times (1.0%)
 
-Codebook diversity: 277/512 codes used
+Codebook diversity: 73/512 codes used
 
-Verb label distribution in this cluster:
-  walk                          :  12 samples (8.5%)
-  take-walk                     :   8 samples (5.6%)
-  unknown                       :   6 samples (4.2%)
-  stop-walk                     :   6 samples (4.2%)
-  jog-run                       :   3 samples (2.1%)
-  run-side-turn                 :   2 samples (1.4%)
-  move-run-stop-swinge          :   2 samples (1.4%)
-  run-veer-walk                 :   2 samples (1.4%)
-  left-swinge-turn-walk         :   2 samples (1.4%)
-  appear-keep-lose-move-place-poise-take-try-walk:   2 samples (1.4%)
+Atomic verb distribution in this cluster:
+  walk                :   11 occurrences
+  stand               :    6 occurrences
+  take                :    6 occurrences
+  stop                :    4 occurrences
+  move                :    3 occurrences
+  start               :    2 occurrences
+  swinge              :    2 occurrences
+  run                 :    1 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  stand-take-walk                         :    4 samples (33.3%)
+  move-walk                               :    2 samples (16.7%)
+  stand-start-stop-walk                   :    2 samples (16.7%)
+  take-walk                               :    2 samples (16.7%)
+  stop-swinge-walk                        :    1 samples (8.3%)
+  move-run-stop-swinge                    :    1 samples (8.3%)
 
 ================================================================================
-K-Means Cluster 11 - 19 samples (2.2%)
+HDBSCAN Cluster 9 (walk) - 74 samples (8.5%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. a person crosses their feet, touches the ground and stands back up.
-  2. a person is stood up and crosses over their feet and lowers into a sitting position, putting a hand onto the floor to balance. before they reach the floor they stand back up.
-  3. a person gets down on their hands and knees, crawls forward, and then stands back up.
-  4. a person gets down on his hands and knees and crawls diagonally across the floor before standing up.
-  5. a person lowers to sit down cross legged and then stands back up.
-  6. a person sits down with crossed legs. then stands up.
-  7. a man excersizes by sitting down and getting up
-  8. a man excersizes by sitting down and getting up
-  9. a person crawls on their hands and knees, then stands up.
-  10. a person crawls on their hands and knees, then stands up.
+  1. a stick person walking from side to side.
+  2. a person walking forward and stands still.
+  3. a person walks forward in a straight line, then stops.
+  4. person is walking straight ahead
+  5. a person walks forward slowly.
+  6. a person runs straight forward.
+  7. person appears to be a quarterback, accepts the snap and appears under pressure, throws pump fake then throws ball in right direction overexagerates difficulty by throwing leg up after the throw.
+  8. the man jogs forward 4 steps.
+  9. person walking forward slowly leading with the right foot.
+  10. a man moves fowards and staggers to the left side  and then moves fowards making a s shape.
 
 Most frequently used codebook entries:
-  Code 150: used    97 times (10.4%)
-  Code 257: used    52 times (5.6%)
-  Code 449: used    44 times (4.7%)
-  Code  45: used    43 times (4.6%)
-  Code  17: used    32 times (3.4%)
-  Code 286: used    27 times (2.9%)
-  Code 469: used    27 times (2.9%)
-  Code 430: used    22 times (2.4%)
-  Code 462: used    20 times (2.1%)
-  Code 472: used    19 times (2.0%)
+  Code 150: used  1526 times (42.1%)
+  Code  30: used    96 times (2.6%)
+  Code 256: used    75 times (2.1%)
+  Code 454: used    74 times (2.0%)
+  Code  53: used    64 times (1.8%)
+  Code 423: used    61 times (1.7%)
+  Code 220: used    48 times (1.3%)
+  Code 383: used    43 times (1.2%)
+  Code 191: used    42 times (1.2%)
+  Code 170: used    40 times (1.1%)
 
-Codebook diversity: 209/512 codes used
+Codebook diversity: 185/512 codes used
 
-Verb label distribution in this cluster:
-  balance-bend-cross-put-reach-sit-squat-stand-touch-write:   2 samples (10.5%)
-  crawl-drop-get-stand          :   2 samples (10.5%)
-  cross-lower-sit-stand         :   2 samples (10.5%)
-  bend-cross-get-put-sit-squat-stand-touch-try:   2 samples (10.5%)
-  crawl-stand                   :   2 samples (10.5%)
-  assume-crawl-get              :   2 samples (10.5%)
-  crawl-get-stand-start         :   2 samples (10.5%)
-  crawl-get-stand-turn          :   1 samples (5.3%)
-  unknown                       :   1 samples (5.3%)
-  crawl-crouch-dash-fall-get-jump-lean-run-shift-spring-take:   1 samples (5.3%)
+Atomic verb distribution in this cluster:
+  walk                :   64 occurrences
+  take                :   23 occurrences
+  stop                :   14 occurrences
+  stand               :   10 occurrences
+  run                 :   10 occurrences
+  jog                 :    8 occurrences
+  push                :    8 occurrences
+  step                :    7 occurrences
+  start               :    6 occurrences
+  left                :    5 occurrences
+  come                :    4 occurrences
+  side                :    4 occurrences
+  swing               :    4 occurrences
+  begin               :    4 occurrences
+  lead                :    4 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  walk                                    :   10 samples (13.5%)
+  take-walk                               :    6 samples (8.1%)
+  stop-walk                               :    4 samples (5.4%)
+  lead-take-walk                          :    4 samples (5.4%)
+  come-stand-walk                         :    2 samples (2.7%)
+  side-stand-walk                         :    2 samples (2.7%)
+  run-veer-walk                           :    2 samples (2.7%)
+  stand-stop-take-walk                    :    2 samples (2.7%)
+  jog-stop                                :    2 samples (2.7%)
+  seem-swinge-walk                        :    2 samples (2.7%)
+  saunter-walk                            :    2 samples (2.7%)
+  appear-fall-lose-push-trip-walk         :    2 samples (2.7%)
+  keep-push-shuffle-stand-step-take-try-walk:    2 samples (2.7%)
+  jump-left-push-stumble-walk             :    2 samples (2.7%)
+  lean-take-walk                          :    2 samples (2.7%)
 
 ================================================================================
-K-Means Cluster 12 - 24 samples (2.8%)
+HDBSCAN Cluster 10 (walk) - 18 samples (2.1%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. a person slowly walked downstairs
-  2. a person slowly walked downstairs
-  3. a person takes 4 steps down, like they are descending stairs
-  4. a person takes 4 steps down, like they are descending stairs
-  5. a person walking fast down stairs.
-  6. a person places their left hand on something then takes several steps down as they walk forward while sliding their hand along the object.
-  7. a man steps up and then stops.
-  8. a man carefully walks downstairs backwards
-  9. a person walks upstairs
-  10. a person walks upstairs
+  1. a walking man makes a right hand turn.
+  2. the person approaches and slowly walks around the back of a chair to their right then sits down.
+  3. a person walks forward into a right turn.
+  4. a person walks forward then turns to their right, continuing to walk.
+  5. a man walks slowly with both hands on railing.
+  6. a person is walking in a circle
+  7. a person, in a fighting pose, backs up, then punches while moving forward, before backing up and kicking.
+  8. the person is making a right turn.
+  9. a figure walks forward and to the right in an arc shape
+  10. a person walks to his right.
 
 Most frequently used codebook entries:
-  Code 150: used   226 times (19.2%)
-  Code 484: used   119 times (10.1%)
-  Code 405: used    79 times (6.7%)
-  Code 408: used    40 times (3.4%)
-  Code  53: used    35 times (3.0%)
-  Code 167: used    27 times (2.3%)
-  Code 301: used    22 times (1.9%)
-  Code 290: used    20 times (1.7%)
-  Code 357: used    19 times (1.6%)
-  Code 220: used    16 times (1.4%)
+  Code 150: used   287 times (32.5%)
+  Code 173: used    40 times (4.5%)
+  Code 220: used    20 times (2.3%)
+  Code 192: used    20 times (2.3%)
+  Code 421: used    20 times (2.3%)
+  Code 474: used    18 times (2.0%)
+  Code 266: used    16 times (1.8%)
+  Code 326: used    12 times (1.4%)
+  Code 209: used    12 times (1.4%)
+  Code 120: used    12 times (1.4%)
 
-Codebook diversity: 155/512 codes used
+Codebook diversity: 157/512 codes used
 
-Verb label distribution in this cluster:
-  walk                          :   8 samples (33.3%)
-  begin-descend-end-take-walk   :   2 samples (8.3%)
-  place-slide-take-walk         :   2 samples (8.3%)
-  step-stop-walk                :   2 samples (8.3%)
-  stop-walk                     :   2 samples (8.3%)
-  unknown                       :   2 samples (8.3%)
-  hop-jump-steady-use-walk      :   2 samples (8.3%)
-  lift-stick-stop-walk          :   2 samples (8.3%)
-  begin-climb-hold-jump-make-spread-take-walk:   1 samples (4.2%)
-  begin-climb-hold-jump-left-make-spread-take-walk:   1 samples (4.2%)
+Atomic verb distribution in this cluster:
+  walk                :   18 occurrences
+  turn                :    5 occurrences
+  take                :    4 occurrences
+  stand               :    3 occurrences
+  come                :    2 occurrences
+  make                :    2 occurrences
+  hold                :    2 occurrences
+  move                :    2 occurrences
+  curve               :    2 occurrences
+  bend                :    2 occurrences
+  approach            :    1 occurrences
+  deject              :    1 occurrences
+  outstretche         :    1 occurrences
+  sit                 :    1 occurrences
+  change              :    1 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  walk                                    :    2 samples (11.1%)
+  come-make-walk                          :    1 samples (5.6%)
+  approach-deject-outstretche-sit-stand-walk:    1 samples (5.6%)
+  change-do-walk                          :    1 samples (5.6%)
+  continue-take-turn-walk                 :    1 samples (5.6%)
+  grab-hold-rail-walk                     :    1 samples (5.6%)
+  back-kick-move-practice-walk            :    1 samples (5.6%)
+  make-veer-walk                          :    1 samples (5.6%)
+  stand-walk                              :    1 samples (5.6%)
+  take-walk                               :    1 samples (5.6%)
+  turn-walk                               :    1 samples (5.6%)
+  left-swinge-turn-walk                   :    1 samples (5.6%)
+  come-curve-stand-walk                   :    1 samples (5.6%)
+  bend-take-turn-walk                     :    1 samples (5.6%)
+  bend-curve-turn-walk                    :    1 samples (5.6%)
 
 ================================================================================
-K-Means Cluster 13 - 28 samples (3.2%)
+HDBSCAN Cluster 11 (raise) - 19 samples (2.2%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. the person is jogging lightly
-  2. the person is jogging lightly
-  3. the person is walking in a comple circle counter clockwise.
-  4. the person walks forward then turns around to walk in the direction they came from.
-  5. a person walks, swinging their hips and arms side to side, then walks back.
-  6. a man walks in a circle.
-  7. a person walks counterclockwise in a circle.
-  8. a person walks around an oval like path
-  9. a person walks in a complete circle going in a clockwise motion.
-  10. a person walks in a counterclockwise circle then stops at original position
+  1. person waves with left hand above head
+  2. person waves their hand at another person.
+  3. the person is moving something.
+  4. a figure flexes his left arm above his shoulder while flexing his right arm below, forming a body builder pose
+  5. arms are placed down by the side from being straight out and then the left hand goes out making a random jabbing spots.
+  6. person is typing a passcode in an order
+  7. a person standing up lifts their left hand and places it on their head.
+  8. a person unlocks a window and proceeds to open it.
+  9. a person gestures to another person to come in their direction and then waves.
+  10. someone with his left hand scratches his head
 
 Most frequently used codebook entries:
-  Code 150: used   175 times (12.8%)
-  Code  44: used    21 times (1.5%)
-  Code 263: used    20 times (1.5%)
-  Code 159: used    18 times (1.3%)
-  Code 142: used    16 times (1.2%)
-  Code 125: used    15 times (1.1%)
-  Code 233: used    15 times (1.1%)
-  Code 301: used    14 times (1.0%)
-  Code  25: used    14 times (1.0%)
-  Code   2: used    14 times (1.0%)
+  Code 150: used   306 times (32.9%)
+  Code 159: used    72 times (7.7%)
+  Code 438: used    58 times (6.2%)
+  Code 403: used    52 times (5.6%)
+  Code 146: used    38 times (4.1%)
+  Code  91: used    37 times (4.0%)
+  Code 433: used    31 times (3.3%)
+  Code 199: used    28 times (3.0%)
+  Code 369: used    27 times (2.9%)
+  Code  23: used    21 times (2.3%)
 
-Codebook diversity: 229/512 codes used
+Codebook diversity: 64/512 codes used
 
-Verb label distribution in this cluster:
-  walk                          :   4 samples (14.3%)
-  go-jog-run-start              :   2 samples (7.1%)
-  come-side-start-swinge-turn-walk:   2 samples (7.1%)
-  hold-start-walk               :   2 samples (7.1%)
-  go-stop-walk                  :   2 samples (7.1%)
-  jog-make-run                  :   2 samples (7.1%)
-  left-lift-walk                :   2 samples (7.1%)
-  come-left-stand-stop-walk     :   2 samples (7.1%)
-  counterclockwise-walk         :   1 samples (3.6%)
-  make-walk                     :   1 samples (3.6%)
+Atomic verb distribution in this cluster:
+  raise               :    7 occurrences
+  stand               :    6 occurrences
+  wave                :    5 occurrences
+  bring               :    5 occurrences
+  move                :    4 occurrences
+  lower               :    4 occurrences
+  make                :    3 occurrences
+  reach               :    3 occurrences
+  put                 :    3 occurrences
+  use                 :    3 occurrences
+  place               :    2 occurrences
+  left                :    2 occurrences
+  take                :    2 occurrences
+  gesture             :    2 occurrences
+  touch               :    2 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  wave                                    :    2 samples (10.5%)
+  bring-lift-raise                        :    2 samples (10.5%)
+  move-somthe-stand                       :    1 samples (5.3%)
+  arm-bring-flex-form                     :    1 samples (5.3%)
+  bring-go-lower-make-place-reach-stand   :    1 samples (5.3%)
+  left-lower-reach-take-type              :    1 samples (5.3%)
+  place-raise-return-stand-wave           :    1 samples (5.3%)
+  bring-elevate-gesture-make-open-proceed-raise-stand-touch-unlock:    1 samples (5.3%)
+  come-gesture-move-seem-shake-wave       :    1 samples (5.3%)
+  raise-scratch                           :    1 samples (5.3%)
+  bite-head-look-lower-raise              :    1 samples (5.3%)
+  drink-pat-press-put-take-use            :    1 samples (5.3%)
+  lower-point-poke-stand-touch-use        :    1 samples (5.3%)
+  left-make-move-put-reach-slide-use      :    1 samples (5.3%)
+  raise-wave                              :    1 samples (5.3%)
 
 ================================================================================
-K-Means Cluster 14 - 6 samples (0.7%)
+HDBSCAN Cluster 12 (lift) - 24 samples (2.8%)
 ================================================================================
 
 Sample descriptions (first 10):
-  1. a man is kneeling
-  2. a man is kneeling
-  3. from a prone position on the ground, the person raises up into a squat with hands held together in front of them
-  4. from a prone position on the ground, the person raises up into a squat with hands held together in front of them
-  5. a person sits down on the ground then stands back up
-  6. a person sits down on the ground then stands back up
+  1. a person knocks on a door.
+  2. a figure moves his arms up and down from the elbow as if lifting invisible weights.
+  3. a man moves his arms by his sides.
+  4. a person make a motion opening opening a bottle in their left hand, then proceeds to make a motion like they are drinking from the bottle.
+  5. a man seems to be lifting weight with both hands and bending knees a bit
+  6. a person bends while lifting weights and then stands back up.
+  7. a person stands still lifting their forearms as if lifting weights.
+  8. person flexes arms towards and away from body with elbows bent and then repeats this with arms extended.
+  9. the man exercises both arms by bending them repeatedly.
+  10. person curls both hands in front of them, bending at the elbow.
 
 Most frequently used codebook entries:
-  Code 322: used    60 times (20.4%)
-  Code 150: used    40 times (13.6%)
-  Code 430: used    24 times (8.2%)
-  Code  17: used    23 times (7.8%)
-  Code 318: used    20 times (6.8%)
-  Code 110: used    19 times (6.5%)
-  Code 284: used     9 times (3.1%)
-  Code  45: used     8 times (2.7%)
-  Code  53: used     8 times (2.7%)
-  Code 469: used     6 times (2.0%)
+  Code 150: used   689 times (58.6%)
+  Code  82: used   101 times (8.6%)
+  Code 183: used    47 times (4.0%)
+  Code 192: used    19 times (1.6%)
+  Code 212: used    17 times (1.4%)
+  Code 433: used    16 times (1.4%)
+  Code 462: used    16 times (1.4%)
+  Code 314: used    15 times (1.3%)
+  Code 474: used    15 times (1.3%)
+  Code 454: used    15 times (1.3%)
+
+Codebook diversity: 78/512 codes used
+
+Atomic verb distribution in this cluster:
+  lift                :   13 occurrences
+  bend                :   12 occurrences
+  move                :    9 occurrences
+  stand               :    6 occurrences
+  exercise            :    6 occurrences
+  do                  :    6 occurrences
+  raise               :    4 occurrences
+  hold                :    4 occurrences
+  curl                :    4 occurrences
+  thrust              :    4 occurrences
+  drink               :    3 occurrences
+  open                :    3 occurrences
+  put                 :    3 occurrences
+  wipe                :    3 occurrences
+  extend              :    3 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  bend-do-exercise-thrust                 :    4 samples (16.7%)
+  dumbell-excercise-lift-move             :    2 samples (8.3%)
+  bend-hold-lift-say-seem-squat           :    2 samples (8.3%)
+  bend-keep-lift-raise-stand              :    2 samples (8.3%)
+  curl-lift-stand                         :    2 samples (8.3%)
+  bend-extend-flex-move-repeat-stretch    :    2 samples (8.3%)
+  bend-curl-do-lift                       :    2 samples (8.3%)
+  drink-grab-hold-lift-open-put-reach-wipe:    2 samples (8.3%)
+  knock-move-stand                        :    1 samples (4.2%)
+  exercise-move-side                      :    1 samples (4.2%)
+  drink-make-open-point-proceed-put-raise-wipe:    1 samples (4.2%)
+  lift-move-stand                         :    1 samples (4.2%)
+  exercise-left-move-side                 :    1 samples (4.2%)
+  appear-extend-move-raise-rock-sit-sway  :    1 samples (4.2%)
+
+================================================================================
+HDBSCAN Cluster 13 (raise) - 37 samples (4.2%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. a person lifts up only their left arm above shoulder height, lowers their left arm and lifts up both arms above shoulder height, lowers both arms and then lifts as high as they can before bringing both arms back down to shoulder height.
+  2. a person places both of their hands behind of their head.
+  3. a person with their forearms upright, rasies their arms 3 times.
+  4. person has arms held out in a swimming motion
+  5. a person is t-posing (n/a)
+  6. character raises hands slowly to stetch their back while leaning left and right.
+  7. a person lowers and raises their arms straight form their sides.
+  8. a man has his arms apart, then brings his hands to touch in front of his chest. he brings his arms down to his sides for a moment, then stretches them back out at shoulder-height.
+  9. a man does jumping jacks, hopping as he alternates between having his legs apart and arms up, and his legs together and arms down.
+  10. the person waves both hands simultaneously
+
+Most frequently used codebook entries:
+  Code 150: used   702 times (38.7%)
+  Code 315: used   123 times (6.8%)
+  Code 188: used    74 times (4.1%)
+  Code 414: used    62 times (3.4%)
+  Code  76: used    55 times (3.0%)
+  Code 447: used    49 times (2.7%)
+  Code 433: used    44 times (2.4%)
+  Code 314: used    42 times (2.3%)
+  Code 138: used    39 times (2.2%)
+  Code 159: used    37 times (2.0%)
+
+Codebook diversity: 111/512 codes used
+
+Atomic verb distribution in this cluster:
+  raise               :   23 occurrences
+  lift                :   12 occurrences
+  stretch             :   12 occurrences
+  return              :    8 occurrences
+  stand               :    8 occurrences
+  bring               :    7 occurrences
+  lower               :    6 occurrences
+  appear              :    6 occurrences
+  put                 :    6 occurrences
+  reach               :    6 occurrences
+  hold                :    5 occurrences
+  outstretche         :    4 occurrences
+  rasie               :    4 occurrences
+  left                :    4 occurrences
+  drop                :    4 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  appear-lift-outstretche-raise-rasie-return:    4 samples (10.8%)
+  bring-can-curl-lift-lower               :    2 samples (5.4%)
+  place-stretch                           :    2 samples (5.4%)
+  hold-streche                            :    2 samples (5.4%)
+  stand-tpose                             :    2 samples (5.4%)
+  arch-bend-lean-left-raise-stand-stetch  :    2 samples (5.4%)
+  back-drop-form-lower-put-raise-repeat-try-wave:    2 samples (5.4%)
+  bring-extend-move-put-stand-stretch-swim-touch:    2 samples (5.4%)
+  alternate-close-complete-have-head-hop-jump-land-raise-reach-return-shoulderwidth-spread:    2 samples (5.4%)
+  put-wave                                :    2 samples (5.4%)
+  lift-lower-raise-stretch                :    2 samples (5.4%)
+  appear-extend-form-lift-raise-return    :    2 samples (5.4%)
+  hold-lift-make-point-spread-squat-use   :    2 samples (5.4%)
+  raise-reach-throw                       :    2 samples (5.4%)
+  bring-drop-raise-show-stretch           :    2 samples (5.4%)
+
+================================================================================
+HDBSCAN Cluster 14 (pick) - 14 samples (1.6%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. a person faces to the left, raises their hands to the center of their chest, steps back on the right food and draws back the right hand preparing to throw something, then shifts right hip and body forward, throws with a follow-through, then picks up left leg, grabbing the left foot with the right arm.
+  2. a person stands on one leg and grabs the opposite ankle to pull their leg back
+  3. a person grabs something with his right hand, turns to the left, and wipes it on something else.
+  4. a person uses their right hand to pick up a sponge, then transfers it to their left and washes a car.
+  5. a woman stoops over on her right side, picks up an object ,stands up , turns it in both hands before leaning over and opening a door with her left hand and scrubbing it with her right.
+  6. a man leans forward and then rears back to throw with his right arm, he throws again.
+  7. a person acts like they are throwing an object.
+  8. a man picks up, holds to his ear, then hangs up a phone with his left hand.
+  9. the man is moving something to the right
+  10. a person puts both arms together and swings left.
+
+Most frequently used codebook entries:
+  Code  56: used    64 times (9.3%)
+  Code 150: used    49 times (7.1%)
+  Code  49: used    27 times (3.9%)
+  Code 279: used    20 times (2.9%)
+  Code 301: used    19 times (2.8%)
+  Code 264: used    18 times (2.6%)
+  Code 434: used    17 times (2.5%)
+  Code 498: used    13 times (1.9%)
+  Code 345: used    13 times (1.9%)
+  Code  36: used    12 times (1.7%)
+
+Codebook diversity: 158/512 codes used
+
+Atomic verb distribution in this cluster:
+  pick                :    7 occurrences
+  grab                :    6 occurrences
+  lean                :    5 occurrences
+  move                :    5 occurrences
+  put                 :    4 occurrences
+  lift                :    3 occurrences
+  throw               :    3 occurrences
+  turn                :    3 occurrences
+  get                 :    2 occurrences
+  hold                :    2 occurrences
+  shift               :    2 occurrences
+  step                :    2 occurrences
+  stand               :    2 occurrences
+  stretch             :    2 occurrences
+  begin               :    2 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  draw-face-get-grab-hold-kick-lift-pick-prepare-raise-shift-step-throw:    1 samples (7.1%)
+  do-grab-pull-stand-stretch              :    1 samples (7.1%)
+  begin-clean-grab-lean-pick-polish-take-turn-unscrew-walk-wipe:    1 samples (7.1%)
+  dry-lower-move-pick-transfer-use-wash   :    1 samples (7.1%)
+  appear-begin-bend-grab-lean-make-open-outstretche-pet-pick-scrub-stand-step-stoop-turn:    1 samples (7.1%)
+  get-give-hit-lean-rear-throw            :    1 samples (7.1%)
+  act-catch-move-throw-wind               :    1 samples (7.1%)
+  hang-hold-lift-pick-put-turn            :    1 samples (7.1%)
+  grab-lift-make-move-put                 :    1 samples (7.1%)
+  lean-left-put-shift-start-strech-stretch:    1 samples (7.1%)
+  lean-move-pick-pour                     :    1 samples (7.1%)
+  clean-pick-replace-return-use-wipe      :    1 samples (7.1%)
+  left-miss-move-wash                     :    1 samples (7.1%)
+  grab-look-put-take-tilt                 :    1 samples (7.1%)
+
+================================================================================
+HDBSCAN Cluster 15 (pick) - 13 samples (1.5%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. a person turns to the right and picks up an object with their right hand, lifts it towards their head, then puts it back down.
+  2. a person gestures to the ground, and then to the right, and then back to the ground
+  3. person opens a drawer and puts something in it
+  4. a person puts both arms together and swings right.
+  5. the person pick something up and poured it to the right.
+  6. a person slowly walked forward and grabbed something with right hand
+  7. a person  picks something up with their right hand and then their left, then wipes something down as if they are cleaning, before returning the objects back to their original position.
+  8. a person washes right arm.
+  9. a person gets a small ball and throws it with his left hand then kicks his right leg back.
+  10. a person stands on one leg and grabs the opposite ankle to pull their leg back
+
+Most frequently used codebook entries:
+  Code 150: used    51 times (8.0%)
+  Code   9: used    41 times (6.4%)
+  Code 379: used    28 times (4.4%)
+  Code 370: used    27 times (4.2%)
+  Code 433: used    24 times (3.8%)
+  Code 436: used    23 times (3.6%)
+  Code 383: used    17 times (2.7%)
+  Code  67: used    15 times (2.4%)
+  Code 462: used    14 times (2.2%)
+  Code 139: used    14 times (2.2%)
+
+Codebook diversity: 141/512 codes used
+
+Atomic verb distribution in this cluster:
+  pick                :    8 occurrences
+  move                :    5 occurrences
+  hold                :    4 occurrences
+  put                 :    4 occurrences
+  lean                :    4 occurrences
+  grab                :    4 occurrences
+  clean               :    3 occurrences
+  lift                :    2 occurrences
+  turn                :    2 occurrences
+  open                :    2 occurrences
+  shift               :    2 occurrences
+  stretch             :    2 occurrences
+  pour                :    2 occurrences
+  pet                 :    2 occurrences
+  walk                :    2 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  hang-hold-lift-pick-put-turn            :    1 samples (7.7%)
+  gesture-hold-move-pick-put              :    1 samples (7.7%)
+  hold-open-pick-put-tilt                 :    1 samples (7.7%)
+  lean-put-shift-start-strech-stretch-swing:    1 samples (7.7%)
+  lean-move-pick-pour                     :    1 samples (7.7%)
+  clean-grab-lean-pet-walk                :    1 samples (7.7%)
+  clean-pick-replace-return-use-wipe      :    1 samples (7.7%)
+  miss-move-wash                          :    1 samples (7.7%)
+  draw-face-get-grab-hold-kick-left-lift-pick-prepare-raise-shift-step-throw:    1 samples (7.7%)
+  do-grab-pull-stand-stretch              :    1 samples (7.7%)
+  clean-move-table-walk-wipe              :    1 samples (7.7%)
+  appear-begin-bend-grab-lean-make-open-outstretche-pet-pick-scrub-stand-step-stoop-turn:    1 samples (7.7%)
+  move-pick-pour-set-shake                :    1 samples (7.7%)
+
+================================================================================
+HDBSCAN Cluster 16 (cross) - 38 samples (4.4%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. person is clapping on the spot
+  2. a person raised their arm up then back down.
+  3. a person throws a ball with his right hand and then catches the ball with both of his hands.
+  4. a person slowly claps sarcastically
+  5. a man fold his arms in front of his chest.
+  6. a person kneads dough with their right hand.
+  7. someone raises both hands up to their chest and claps, then brings both hands back down to their sides.
+  8. a person holds his hands
+  9. a person stands in the ground, crosses his arms to his chest, then drops his arms back to his sides.
+  10. a person standing puts arms up.
+
+Most frequently used codebook entries:
+  Code 150: used  1072 times (57.6%)
+  Code 503: used   116 times (6.2%)
+  Code 451: used    82 times (4.4%)
+  Code 138: used    45 times (2.4%)
+  Code  93: used    39 times (2.1%)
+  Code 462: used    33 times (1.8%)
+  Code 159: used    29 times (1.6%)
+  Code 300: used    25 times (1.3%)
+  Code 220: used    24 times (1.3%)
+  Code  30: used    21 times (1.1%)
+
+Codebook diversity: 108/512 codes used
+
+Atomic verb distribution in this cluster:
+  cross               :   16 occurrences
+  stand               :   15 occurrences
+  raise               :   10 occurrences
+  fold                :   10 occurrences
+  clap                :    8 occurrences
+  bring               :    8 occurrences
+  hold                :    8 occurrences
+  make                :    8 occurrences
+  rest                :    8 occurrences
+  put                 :    7 occurrences
+  drop                :    6 occurrences
+  take                :    5 occurrences
+  lower               :    4 occurrences
+  massage             :    4 occurrences
+  play                :    4 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  clap-make                               :    4 samples (10.5%)
+  cross-fold-massage-play                 :    4 samples (10.5%)
+  bring-put-rest-shift-stand-take         :    4 samples (10.5%)
+  clap-place-raise-stand                  :    2 samples (5.3%)
+  bring-lower-raise                       :    2 samples (5.3%)
+  add-grab-hold-knead-make-mix-pour-set-shake-use:    2 samples (5.3%)
+  bring-clap-raise                        :    2 samples (5.3%)
+  ball-hold-make                          :    2 samples (5.3%)
+  cross-drop-fold-let-rest-stand          :    2 samples (5.3%)
+  cross-hold-pull-stretch-use             :    2 samples (5.3%)
+  cross-go-put-stand                      :    2 samples (5.3%)
+  cross-drop-lower-raise-start            :    2 samples (5.3%)
+  cross-fold                              :    2 samples (5.3%)
+  cross-drop-fold-left-let-rest-stand     :    2 samples (5.3%)
+  catch-excite-hold-stand-throw-witg      :    1 samples (2.6%)
+
+================================================================================
+HDBSCAN Cluster 17 (step) - 31 samples (3.6%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. person does a low kick
+  2. person is grabbing something then walking back.
+  3. a person walks to the side horizontally and then back and forth.
+  4. a man leans over and quickly kicks out with his left leg
+  5. a man walks, picks something up, and shakes it.
+  6. a person turns to right, takes two steps forward, and then runs in place.
+  7. a person walks forward, reaches down and  picks something up with their right hand and places it somewhere else then steps back again.
+  8. a person who is standing with his hands out from his sides steps forward, picks up an object and puts it down, then steps back and resumes his original position.
+  9. a person walks up to something and moves it from the left side to the right side.
+  10. a person who seems to be mixing two different substances
+
+Most frequently used codebook entries:
+  Code 150: used   596 times (39.2%)
+  Code  53: used    51 times (3.4%)
+  Code 433: used    50 times (3.3%)
+  Code  30: used    47 times (3.1%)
+  Code 300: used    39 times (2.6%)
+  Code 462: used    36 times (2.4%)
+  Code 220: used    31 times (2.0%)
+  Code 499: used    21 times (1.4%)
+  Code 171: used    19 times (1.3%)
+  Code 505: used    17 times (1.1%)
+
+Codebook diversity: 191/512 codes used
+
+Atomic verb distribution in this cluster:
+  step                :   14 occurrences
+  walk                :   13 occurrences
+  move                :   12 occurrences
+  stand               :    8 occurrences
+  take                :    8 occurrences
+  pick                :    8 occurrences
+  kick                :    6 occurrences
+  left                :    6 occurrences
+  raise               :    6 occurrences
+  start               :    6 occurrences
+  turn                :    6 occurrences
+  jog                 :    6 occurrences
+  run                 :    6 occurrences
+  place               :    6 occurrences
+  put                 :    6 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  jog-run-stand                           :    4 samples (12.9%)
+  kick-scuff-stand                        :    2 samples (6.5%)
+  grab-left-move-raise-return-start-step-walk:    2 samples (6.5%)
+  step-take-walk                          :    2 samples (6.5%)
+  pick-shake-start-use-walk               :    2 samples (6.5%)
+  lean-move-pick-place-reach-start-step-walk:    2 samples (6.5%)
+  move-pick-step-walk                     :    2 samples (6.5%)
+  mix-pour-raise-reach-seem-step          :    2 samples (6.5%)
+  place-step-take-walk                    :    2 samples (6.5%)
+  kick-lean-pitch-turn                    :    1 samples (3.2%)
+  jog-move-run-take-turn                  :    1 samples (3.2%)
+  grab-move-pick-place-put-resume-stand-step:    1 samples (3.2%)
+  kick-lift-meet-mimic-move-put-turn      :    1 samples (3.2%)
+  bend-catch-face-go-let-lift-put-raise-set-take:    1 samples (3.2%)
+  kick-kickboxe-lean-pitch-turn           :    1 samples (3.2%)
+
+================================================================================
+HDBSCAN Cluster 18 (play) - 30 samples (3.4%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. while holding their left arm in the air, a person makes a single sawing motion with their right hand.
+  2. a person waves both hands across his body.
+  3. a person is doing a guitar playing motion with their arms then puts their hands down.
+  4. a person moving arms around uncomfortably.
+  5. a person strums a guitar with his right hand.
+  6. a person grabbed something with hands and start to play on it
+  7. person put his left arm down on his right arm down and put his hands together.
+  8. a man standing with arms out, puts them down and moves hands in circular motion.
+  9. a person stirs something with their left hand.
+  10. a person rubs the air.
+
+Most frequently used codebook entries:
+  Code 150: used   362 times (24.6%)
+  Code 300: used   279 times (19.0%)
+  Code 159: used   100 times (6.8%)
+  Code 451: used    55 times (3.7%)
+  Code 433: used    51 times (3.5%)
+  Code 233: used    45 times (3.1%)
+  Code  53: used    43 times (2.9%)
+  Code  90: used    42 times (2.9%)
+  Code 410: used    41 times (2.8%)
+  Code 138: used    38 times (2.6%)
 
 Codebook diversity: 55/512 codes used
 
-Verb label distribution in this cluster:
-  unknown                       :   2 samples (33.3%)
-  crouch-hold-kneel-lie-pull-push-raise-rest-use:   2 samples (33.3%)
-  get-look-sit-stand            :   2 samples (33.3%)
+Atomic verb distribution in this cluster:
+  play                :   12 occurrences
+  put                 :   12 occurrences
+  hold                :   10 occurrences
+  raise               :   10 occurrences
+  make                :    8 occurrences
+  bring               :    8 occurrences
+  bend                :    6 occurrences
+  strum               :    6 occurrences
+  move                :    6 occurrences
+  stand               :    6 occurrences
+  lower               :    4 occurrences
+  wave                :    4 occurrences
+  lift                :    4 occurrences
+  use                 :    4 occurrences
+  inspect             :    4 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  raise-wave                              :    4 samples (13.3%)
+  bring-inspect-object-pick-put-set       :    4 samples (13.3%)
+  bend-hold-lower-make-play-raise         :    2 samples (6.7%)
+  do-play-put-strum                       :    2 samples (6.7%)
+  bend-lift-lower-move-outstretche-put-raise:    2 samples (6.7%)
+  drop-hold-lift-make-play-strum          :    2 samples (6.7%)
+  geture-grab-hold-play-start-use         :    2 samples (6.7%)
+  bring-mirror-move-put-rotate-stand      :    2 samples (6.7%)
+  bend-make-rotate-stir-use               :    2 samples (6.7%)
+  bring-rub-stand-swinge                  :    2 samples (6.7%)
+  extend-hold-indicate-make-move-put-side :    2 samples (6.7%)
+  gesture-hold-play-stand-swipe           :    2 samples (6.7%)
+  play-raise-stroke-strum                 :    2 samples (6.7%)
+
+================================================================================
+HDBSCAN Cluster 19 (raise) - 22 samples (2.5%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. the person is holdings arm up.
+  2. a person stands with their arms out to the sides, then lowers them and reaches out with his right arm a few times.
+  3. the person puts his right hand to his head.
+  4. person is typing a passcode in an order
+  5. person waving hand up
+  6. a person unlocks a window and proceeds to open it.
+  7. moving the right arm towards the face moving his hand back and forth in a waving motion.
+  8. a person gestures to another person to come in their direction and then waves.
+  9. a person scratches head with right hand.
+  10. a person is casting a fishing line.
+
+Most frequently used codebook entries:
+  Code 150: used   379 times (35.2%)
+  Code 233: used    68 times (6.3%)
+  Code  53: used    63 times (5.8%)
+  Code 254: used    54 times (5.0%)
+  Code 273: used    48 times (4.5%)
+  Code  77: used    47 times (4.4%)
+  Code 187: used    43 times (4.0%)
+  Code 181: used    39 times (3.6%)
+  Code  74: used    23 times (2.1%)
+  Code 315: used    19 times (1.8%)
+
+Codebook diversity: 70/512 codes used
+
+Atomic verb distribution in this cluster:
+  raise               :    9 occurrences
+  stand               :    7 occurrences
+  bring               :    6 occurrences
+  wave                :    6 occurrences
+  lower               :    4 occurrences
+  put                 :    4 occurrences
+  move                :    4 occurrences
+  lift                :    4 occurrences
+  make                :    3 occurrences
+  reach               :    3 occurrences
+  use                 :    3 occurrences
+  place               :    2 occurrences
+  take                :    2 occurrences
+  gesture             :    2 occurrences
+  touch               :    2 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  bring-lift-raise                        :    2 samples (9.1%)
+  wave                                    :    2 samples (9.1%)
+  arm-bring-flex-form                     :    1 samples (4.5%)
+  bring-go-lower-make-place-reach-stand   :    1 samples (4.5%)
+  cover-put-raise-stand                   :    1 samples (4.5%)
+  lower-reach-take-type                   :    1 samples (4.5%)
+  place-raise-return-stand-wave           :    1 samples (4.5%)
+  bring-elevate-gesture-make-open-proceed-raise-stand-touch-unlock:    1 samples (4.5%)
+  move-waive-wave                         :    1 samples (4.5%)
+  come-gesture-move-seem-shake-wave       :    1 samples (4.5%)
+  raise-scratch                           :    1 samples (4.5%)
+  bring-cast-lift-stand                   :    1 samples (4.5%)
+  bite-head-look-lower-raise              :    1 samples (4.5%)
+  drink-pat-press-put-take-use            :    1 samples (4.5%)
+  lower-point-poke-stand-touch-use        :    1 samples (4.5%)
+
+================================================================================
+HDBSCAN Cluster 20 (move) - 17 samples (1.9%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. the man bows and takes a small step back with his left foot not moving the right foot.
+  2. a person slowly lifts something from the left to the right.
+  3. the person is doing squats.
+  4. a man twists trunk to left then right.
+  5. a man lifts something from his left to his right
+  6. a person takes a quick and sudden half-step backward.
+  7. a person who is standing with his hands at his sides reaches down with both hands, lifts something up and moves the item to his right and returns to his original position.
+  8. a person picks up a horizontal object from their front left side with both hands, and moves it to the front right side.
+  9. person leans forward and stretches out left hand to move something around
+  10. a person bows forward then steps backward.
+
+Most frequently used codebook entries:
+  Code 150: used   386 times (46.3%)
+  Code 279: used    50 times (6.0%)
+  Code 370: used    47 times (5.6%)
+  Code 301: used    42 times (5.0%)
+  Code 300: used    32 times (3.8%)
+  Code 383: used    23 times (2.8%)
+  Code  16: used    20 times (2.4%)
+  Code 159: used    18 times (2.2%)
+  Code 233: used    16 times (1.9%)
+  Code 357: used    14 times (1.7%)
+
+Codebook diversity: 68/512 codes used
+
+Atomic verb distribution in this cluster:
+  move                :   11 occurrences
+  lift                :    8 occurrences
+  left                :    6 occurrences
+  pick                :    6 occurrences
+  bend                :    5 occurrences
+  take                :    5 occurrences
+  stand               :    4 occurrences
+  put                 :    4 occurrences
+  bow                 :    2 occurrences
+  get                 :    2 occurrences
+  step                :    2 occurrences
+  do                  :    2 occurrences
+  extend              :    2 occurrences
+  squat               :    2 occurrences
+  place               :    2 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  bend-bow-get-move-stand-step-take       :    2 samples (11.8%)
+  bend-do-extend-squat                    :    2 samples (11.8%)
+  left-lift-pick-place-set-twist          :    2 samples (11.8%)
+  look-stop-take-turn-walk                :    2 samples (11.8%)
+  move-pick-put                           :    2 samples (11.8%)
+  left-lift-move-pick                     :    1 samples (5.9%)
+  grab-left-lift-move-put                 :    1 samples (5.9%)
+  left-lift-move-pic-reach-stand          :    1 samples (5.9%)
+  bend-lean-move-stabilize-straighten-stretch-take-wipe:    1 samples (5.9%)
+  lift-move-pick                          :    1 samples (5.9%)
+  grab-lift-move-put                      :    1 samples (5.9%)
+  left-lift-move-pic-reach-return-stand   :    1 samples (5.9%)
+
+================================================================================
+HDBSCAN Cluster 21 (throw) - 14 samples (1.6%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. a stick figure does punching  moves starting with right arm.
+  2. a  person swings with both their arm.
+  3. the person is drinking with his left hand.
+  4. a person moves both arms straight in front, and bends them at the elbow
+  5. person makes a throwing motion with right arm
+  6. looks like he is shaking dice in right hand and then raises that hand toward the left
+  7. a person runs on the spot, while rotating in a circle.
+  8. a person extends their left hand then their right hand, in a punching motion.
+  9. the person is standing sideways, brings hands together in the front at the waist line, swings hands backwards together and then follows through with both hands still together, in a swinging motion.
+  10. a man takes a step back with his right foot, then raises his right arm while leaning left.
+
+Most frequently used codebook entries:
+  Code 150: used   402 times (58.6%)
+  Code 462: used    24 times (3.5%)
+  Code 183: used    17 times (2.5%)
+  Code  86: used    12 times (1.7%)
+  Code 499: used    11 times (1.6%)
+  Code 104: used    10 times (1.5%)
+  Code 458: used    10 times (1.5%)
+  Code 173: used    10 times (1.5%)
+  Code 433: used     8 times (1.2%)
+  Code 278: used     7 times (1.0%)
+
+Codebook diversity: 99/512 codes used
+
+Atomic verb distribution in this cluster:
+  throw               :    4 occurrences
+  left                :    4 occurrences
+  bring               :    3 occurrences
+  stand               :    3 occurrences
+  move                :    3 occurrences
+  raise               :    3 occurrences
+  extend              :    2 occurrences
+  punch               :    2 occurrences
+  start               :    2 occurrences
+  follow              :    2 occurrences
+  swing               :    2 occurrences
+  appear              :    2 occurrences
+  demonstrate         :    2 occurrences
+  make                :    2 occurrences
+  look                :    2 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  bring-follow-stand-swing                :    2 samples (14.3%)
+  demonstrate-make-throw                  :    2 samples (14.3%)
+  look-raise-shake-stretch                :    2 samples (14.3%)
+  jog-left-rotate-run-turn                :    2 samples (14.3%)
+  extend-punch-start-throw                :    1 samples (7.1%)
+  appear-drink-move-scribble-sidestep-stand-write:    1 samples (7.1%)
+  appear-bend-bring-fight-hold-move       :    1 samples (7.1%)
+  extend-left-punch-start-throw           :    1 samples (7.1%)
+  box-catch-lean-left-raise-sway-take     :    1 samples (7.1%)
+  face-hand-lift-move-put-step-sway-warm  :    1 samples (7.1%)
+
+================================================================================
+HDBSCAN Cluster 22 (stand) - 24 samples (2.8%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. a man looks at his wrist or watch
+  2. person standing, raises left hand to look at watch and returns hand down to his side
+  3. a person swings their right arm as if they are hitting something.
+  4. a man stands and moves his hands up and down trying to beat something.
+  5. a person waves left then right.
+  6. a man lifts his left arm as though to look at his wrist, then returns it to near his side.
+  7. this person moves his left hand in a circular motion over his mid section.
+  8. the person is flapping their arms like a chicken.
+  9. a person is moving his left hand around his belly.
+  10. a person rubs their stomach with their right hand.
+
+Most frequently used codebook entries:
+  Code 150: used   725 times (61.6%)
+  Code  16: used    83 times (7.1%)
+  Code 438: used    40 times (3.4%)
+  Code 433: used    38 times (3.2%)
+  Code  53: used    24 times (2.0%)
+  Code 300: used    23 times (2.0%)
+  Code 187: used    20 times (1.7%)
+  Code 220: used    18 times (1.5%)
+  Code 301: used    16 times (1.4%)
+  Code 256: used    15 times (1.3%)
+
+Codebook diversity: 68/512 codes used
+
+Atomic verb distribution in this cluster:
+  stand               :   10 occurrences
+  move                :    7 occurrences
+  look                :    6 occurrences
+  appear              :    6 occurrences
+  rub                 :    6 occurrences
+  raise               :    5 occurrences
+  lift                :    4 occurrences
+  brush               :    4 occurrences
+  rest                :    4 occurrences
+  put                 :    3 occurrences
+  hit                 :    3 occurrences
+  use                 :    3 occurrences
+  wave                :    3 occurrences
+  hand                :    2 occurrences
+  beat                :    2 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  appear-brush-rest-rub-stand             :    4 samples (16.7%)
+  appear-beat-drum-hit-move-stand-try     :    2 samples (8.3%)
+  left-wave                               :    2 samples (8.3%)
+  lift-look-put-rasie-return              :    2 samples (8.3%)
+  lean-move-raise-scrub-stand-uppercore-use:    2 samples (8.3%)
+  move-perform-rub                        :    2 samples (8.3%)
+  jog-run                                 :    2 samples (8.3%)
+  go-look-put-watch                       :    1 samples (4.2%)
+  hand-look-raise-stand                   :    1 samples (4.2%)
+  hit-shoot-step-swing-use                :    1 samples (4.2%)
+  bend-flap-squat                         :    1 samples (4.2%)
+  lift-look-raise-stretch                 :    1 samples (4.2%)
+  hand-look-raise                         :    1 samples (4.2%)
+  move-waive-wave                         :    1 samples (4.2%)
+  arm-curl-lift-stand                     :    1 samples (4.2%)
+
+================================================================================
+HDBSCAN Cluster 23 (take) - 45 samples (5.2%)
+================================================================================
+
+Sample descriptions (first 10):
+  1. the figure lifts the right arm, puts right arm back down, stands, and then steps backward.
+  2. person turns body slightly and moves backwards
+  3. he jumps up then stop
+  4. a person walks slowly backward.
+  5. a person walks backwards quickly
+  6. a person loses balance and trips backwards to the left.
+  7. a stick person taking a step to the left.
+  8. person steps back two  steps leading with right foot first
+  9. person steps backwards sharply starting with their left foot. looking at their left shoulder movement, the person appears to be reacting to being shoved and staggered backwards.
+  10. the man stagers two steps to the right.
+
+Most frequently used codebook entries:
+  Code 150: used   885 times (40.1%)
+  Code 300: used    79 times (3.6%)
+  Code 159: used    72 times (3.3%)
+  Code 256: used    67 times (3.0%)
+  Code  53: used    64 times (2.9%)
+  Code 259: used    58 times (2.6%)
+  Code 357: used    39 times (1.8%)
+  Code 233: used    37 times (1.7%)
+  Code 301: used    37 times (1.7%)
+  Code 462: used    35 times (1.6%)
+
+Codebook diversity: 165/512 codes used
+
+Atomic verb distribution in this cluster:
+  take                :   13 occurrences
+  stand               :   12 occurrences
+  walk                :   12 occurrences
+  fall                :   10 occurrences
+  step                :    9 occurrences
+  push                :    9 occurrences
+  jump                :    7 occurrences
+  look                :    6 occurrences
+  lose                :    6 occurrences
+  turn                :    4 occurrences
+  receive             :    4 occurrences
+  trip                :    4 occurrences
+  stumble             :    4 occurrences
+  raise               :    3 occurrences
+  start               :    3 occurrences
+
+Compound verb distribution in this cluster (top 15):
+  take-turn                               :    4 samples (8.9%)
+  walk                                    :    4 samples (8.9%)
+  fall-lose-receive-trip                  :    4 samples (8.9%)
+  jump-stop                               :    2 samples (4.4%)
+  look-take-walk                          :    2 samples (4.4%)
+  sidestep-take                           :    2 samples (4.4%)
+  appear-fall-look-react-shove-stagger-stand-start-step-stumble-wave:    2 samples (4.4%)
+  fall-push-stager                        :    2 samples (4.4%)
+  look-walk                               :    2 samples (4.4%)
+  jump-stand                              :    2 samples (4.4%)
+  avoid-push-recover-step                 :    2 samples (4.4%)
+  fall-lose-push-regain                   :    2 samples (4.4%)
+  bring-hop-jump-make-push-stand-trot     :    2 samples (4.4%)
+  stand-step-take                         :    2 samples (4.4%)
+  stomp                                   :    2 samples (4.4%)
