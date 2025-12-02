@@ -2,6 +2,7 @@ import argparse
 import os
 from collections import Counter, defaultdict
 
+import h5py
 import numpy as np
 
 
@@ -347,6 +348,85 @@ def main():
         f"({noise_stats['n_noise_after']/max(1, noise_stats['n_samples'])*100:.2f}%)\n"
         f"  Reassigned from noise  : {noise_stats['n_reassigned']}"
     )
+
+    # Also write a denoised clustered HDF5 file if the original exists
+    clustered_hdf5_in = os.path.join(args.data_dir, "embeddings_clustered.h5")
+    if os.path.exists(clustered_hdf5_in):
+        clustered_hdf5_out = os.path.join(
+            args.data_dir, "embeddings_clustered_denoised.h5"
+        )
+        print(
+            f"\nWriting denoised clustered HDF5:\n"
+            f"  input : {clustered_hdf5_in}\n"
+            f"  output: {clustered_hdf5_out}"
+        )
+
+        with h5py.File(clustered_hdf5_in, "r") as fin, h5py.File(
+            clustered_hdf5_out, "w"
+        ) as fout:
+            # Copy basic metadata and update n_clusters / cluster_*_label attrs
+            for key, val in fin.attrs.items():
+                # We will overwrite n_clusters and any cluster_*_label below
+                if key.startswith("cluster_") and key.endswith("_label"):
+                    continue
+                if key in ("n_clusters",):
+                    continue
+                fout.attrs[key] = val
+
+            # Update cluster-level metadata based on denoised labels
+            unique_clusters = sorted(
+                int(c) for c in np.unique(labels_denoised) if int(c) != -1
+            )
+            fout.attrs["n_clusters"] = len(unique_clusters)
+            for cid in unique_clusters:
+                verb = cluster_to_verb.get(cid, "unknown")
+                fout.attrs[f"cluster_{cid}_label"] = verb
+
+            # Sanity check: number of groups should match number of labels
+            group_names = list(fin.keys())
+            if len(group_names) != labels_denoised.shape[0]:
+                raise ValueError(
+                    "Number of samples in embeddings_clustered.h5 "
+                    f"({len(group_names)}) does not match length of "
+                    f"cluster_labels_denoised ({labels_denoised.shape[0]})."
+                )
+
+            # Copy per-sample groups while updating cluster_id / cluster_label
+            for idx, name in enumerate(group_names):
+                g_in = fin[name]
+                g_out = fout.create_group(name)
+
+                # Copy datasets
+                for dname, ds in g_in.items():
+                    g_out.create_dataset(
+                        dname,
+                        data=ds[()],
+                        compression="gzip",
+                        compression_opts=4,
+                    )
+
+                # Copy attributes except cluster_id / cluster_label
+                for k, v in g_in.attrs.items():
+                    if k in ("cluster_id", "cluster_label"):
+                        continue
+                    g_out.attrs[k] = v
+
+                # Set new cluster_id / cluster_label from denoised labels
+                new_cid = int(labels_denoised[idx])
+                g_out.attrs["cluster_id"] = new_cid
+                if new_cid == -1:
+                    g_out.attrs["cluster_label"] = "noise"
+                else:
+                    g_out.attrs["cluster_label"] = cluster_to_verb.get(
+                        new_cid, "unknown"
+                    )
+
+        print(f"✓ Saved denoised clustered HDF5 to {clustered_hdf5_out}")
+    else:
+        print(
+            f"\nNo embeddings_clustered.h5 found in {args.data_dir}; "
+            "skipping creation of embeddings_clustered_denoised.h5."
+        )
 
 
 if __name__ == "__main__":
