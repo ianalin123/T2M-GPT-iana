@@ -241,7 +241,7 @@ def parse_args():
         "--min-cluster-sizes",
         type=int,
         nargs="+",
-        default=[10, 12, 15],
+        default=[5, 7, 10, 12, 15],
         help="List of min_cluster_size values to try.",
     )
     parser.add_argument(
@@ -250,8 +250,7 @@ def parse_args():
         nargs="+",
         default=[None, 5, 10],
         help=(
-            "List of min_samples values to try. Use -1 to indicate None "
-            "(i.e., use min_cluster_size)."
+            "List of min_samples values to try. Use None to indicate min_cluster_size"
         ),
     )
     parser.add_argument(
@@ -308,5 +307,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
