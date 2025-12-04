@@ -18,7 +18,12 @@ def extract_verbs(texts_dir: str, output_file: str) -> None:
         if not os.path.isfile(full_path):
             continue
 
-        with open(full_path) as f:
+        # NEW: only process .txt files
+        if not filename.lower().endswith(".txt"):
+            continue
+
+        # NEW: be tolerant of bad encodings
+        with open(full_path, encoding="utf-8", errors="ignore") as f:
             content = f.read().strip().split("\n")
 
         verbs = set()
