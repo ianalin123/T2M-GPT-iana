@@ -1,77 +1,53 @@
 import os
-import argparse
+import zipfile
 from tqdm import tqdm
+import argparse
 
 
-def extract_verbs(texts_dir: str, output_file: str) -> None:
-    """
-    Extract unique verb labels from all text files in a directory.
-
-    Assumes each line has a '#' and tokens tagged with '/VERB', e.g. 'walk/VERB'.
-    """
+def extract_verbs(texts_dir: str):
     labels = {}
-
-    for filename in tqdm(os.listdir(texts_dir), desc="Processing files"):
-        full_path = os.path.join(texts_dir, filename)
-
-        # Skip non-files (e.g. directories)
-        if not os.path.isfile(full_path):
+    texts_dir = os.path.join(texts_dir, "texts")
+    # iterate over all txt files in the given texts directory
+    for filename in tqdm(os.listdir(texts_dir)):
+        file_path = os.path.join(texts_dir, filename)
+        if not os.path.isfile(file_path):
             continue
 
-        # NEW: only process .txt files
-        if not filename.lower().endswith(".txt"):
-            continue
-
-        # NEW: be tolerant of bad encodings
-        with open(full_path, encoding="utf-8", errors="ignore") as f:
+        with open(file_path) as f:
             content = f.read().strip().split("\n")
 
         verbs = set()
 
         for line in content:
             # just handling the formatting dictated by each txt file
-            if "#" not in line:
-                continue
-
-            tokens = line.split("#", 1)[1].split(" ")
+            tokens = line.split("#")[1].split(" ")
             for token in tokens:
                 if "/VERB" not in token:
                     continue
                 verbs.add(token.strip("/VERB"))
 
-        # ordering each verb alphabetically asc since order doesn't matter
-        # (i.e. walk-run == run-walk)
+        # ordering each verb alphabetically ascendingly since order doesn't matter
         label = "-".join(sorted(list(verbs)))
+        labels[filename.strip(".txt")] = label
 
-        file_id, _ = os.path.splitext(filename)
-        labels[file_id] = label
+    # save verbs.txt next to the texts directory (e.g. dataset/HumanML3D/verbs.txt)
+    output_dir = os.path.dirname(texts_dir)
+    output_path = os.path.join(output_dir, "verbs.txt")
+    with open(output_path, "w") as f:
+        f.write("\n".join(map(lambda k: f"{k} {labels[k]}", labels)))
+    print(f"FileID to verb mapping saved in {output_path}")
 
-    with open(output_file, "w") as f:
-        f.write("\n".join(f"{k} {labels[k]}" for k in labels))
-    print(f"FileID to verb mapping saved in {output_file}")
 
-
-def main():
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Extract verb labels from a dataset of POS-tagged text files."
+        description="Extract verb labels from a dataset texts directory."
     )
     parser.add_argument(
         "--texts_dir",
         type=str,
-        default="dataset/HumanML3D/texts",
-        help="Directory containing input text files.",
+        default="dataset/HumanML3D",
+        help="Path to the dataset texts directory (e.g. dataset/KIT-ML).",
     )
-    parser.add_argument(
-        "--output_file",
-        type=str,
-        default="dataset/HumanML3D/verbs.txt",
-        help="Path to output mapping file.",
-    )
-
     args = parser.parse_args()
 
-    extract_verbs(args.texts_dir, args.output_file)
-
-
-if __name__ == "__main__":
-    main()
+    extract_verbs(args.texts_dir)
