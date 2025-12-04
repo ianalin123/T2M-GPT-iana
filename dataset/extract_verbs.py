@@ -12,7 +12,14 @@ for filename in tqdm(os.listdir(texts_dir)):
     verbs = set()
 
     for line in content:
-        tokens = line.split("#")[1].split(" ") # just handling the formatting dictated by each txt file
+        # Some KIT text files contain header / empty lines without a '#' separator.
+        # For those lines we simply skip verb extraction.
+        if "#" not in line:
+            continue
+
+        # Just handling the formatting dictated by each txt file:
+        # "<meta stuff> # token1/POS token2/POS ..."
+        tokens = line.split("#", 1)[1].split(" ")
         for token in tokens:
             if "/VERB" not in token:
                 continue
