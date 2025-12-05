@@ -4,6 +4,7 @@ from itertools import permutations
 from collections import defaultdict
 from scipy.spatial.distance import cosine
 from scipy.stats import pearsonr
+from pathlib import Path
 
 
 def load_cluster_embeddings(filepath):
@@ -128,9 +129,11 @@ if __name__ == "__main__":
         print(f"Available clusters: {cluster_labels}\n", file=f)
 
         # Compute direction and transform
-        triple_verbs = permutations(cluster_labels, r=3)
+        triple_verbs = list(permutations(cluster_labels, r=3))
 
-        for A, B, C in triple_verbs:
+        for i in range(len(triple_verbs)):
+            A, B, C = triple_verbs[i]
+
             direction = compute_cluster_direction(cluster_embeddings, A, B)
 
             transformee_centroid = get_cluster_centroid(cluster_embeddings, C)
@@ -144,6 +147,14 @@ if __name__ == "__main__":
                 continue
 
             print(f"'{C}' + ('{A}' -> '{B}') = '{analogy_res}'", file=f)
+
+            Path(f"clustering/transformations").mkdir(parents=True, exist_ok=True)
+
+            with open(f"clustering/transformations/{i}.npy", "wb") as g:
+                np.save(g, new_vector)
+
+            with open(f"clustering/transformations/logs.txt", "a") as g:
+                g.write(f"{i}: {analogy_res}\n")
 
 
         # Cosine similarity relationships
