@@ -314,49 +314,56 @@ def main():
         print("\nNo clusters were merged for the specified verbs.")
 
     # Step 2: optionally reassign noise
-    if args.no_reassign_noise:
-        return
+    if not args.no_reassign_noise:
+        print("\n" + "=" * 80)
+        print("Reassigning a subset of noise points to nearest semantic clusters ...")
+        print("=" * 80)
 
-    print("\n" + "=" * 80)
-    print("Reassigning a subset of noise points to nearest semantic clusters ...")
-    print("=" * 80)
+        embeddings = load_embeddings(args.data_dir)
+        if embeddings.shape[0] != labels_merged.shape[0]:
+            raise ValueError(
+                f"Mismatch between embeddings ({embeddings.shape[0]}) and labels "
+                f"({labels_merged.shape[0]})"
+            )
 
-    embeddings = load_embeddings(args.data_dir)
-    if embeddings.shape[0] != labels_merged.shape[0]:
-        raise ValueError(
-            f"Mismatch between embeddings ({embeddings.shape[0]}) and labels "
-            f"({labels_merged.shape[0]})"
+        labels_denoised, noise_stats = reassign_noise_to_nearest_clusters(
+            embeddings,
+            labels_merged,
+            cluster_to_verb,
+            target_verbs=args.verbs,
         )
 
-    labels_denoised, noise_stats = reassign_noise_to_nearest_clusters(
-        embeddings,
-        labels_merged,
-        cluster_to_verb,
-        target_verbs=args.verbs,
-    )
+        denoised_path = os.path.join(args.data_dir, "cluster_labels_denoised.npy")
+        np.save(denoised_path, labels_denoised)
+        print(f"\nSaved denoised labels to {denoised_path}")
 
-    denoised_path = os.path.join(args.data_dir, "cluster_labels_denoised.npy")
-    np.save(denoised_path, labels_denoised)
-    print(f"\nSaved denoised labels to {denoised_path}")
+        print(
+            "\nNoise reassignment statistics:\n"
+            f"  Total samples          : {noise_stats['n_samples']}\n"
+            f"  Noise before           : {noise_stats['n_noise_before']} "
+            f"({noise_stats['n_noise_before']/max(1, noise_stats['n_samples'])*100:.2f}%)\n"
+            f"  Noise after            : {noise_stats['n_noise_after']} "
+            f"({noise_stats['n_noise_after']/max(1, noise_stats['n_samples'])*100:.2f}%)\n"
+            f"  Reassigned from noise  : {noise_stats['n_reassigned']}"
+        )
+        
+        final_labels = labels_denoised
+        output_suffix = "denoised"
+    else:
+        print("\n" + "=" * 80)
+        print("Skipping noise reassignment (--no-reassign-noise)")
+        print("=" * 80)
+        final_labels = labels_merged
+        output_suffix = "merged"
 
-    print(
-        "\nNoise reassignment statistics:\n"
-        f"  Total samples          : {noise_stats['n_samples']}\n"
-        f"  Noise before           : {noise_stats['n_noise_before']} "
-        f"({noise_stats['n_noise_before']/max(1, noise_stats['n_samples'])*100:.2f}%)\n"
-        f"  Noise after            : {noise_stats['n_noise_after']} "
-        f"({noise_stats['n_noise_after']/max(1, noise_stats['n_samples'])*100:.2f}%)\n"
-        f"  Reassigned from noise  : {noise_stats['n_reassigned']}"
-    )
-
-    # Also write a denoised clustered HDF5 file if the original exists
+    # Write an updated clustered HDF5 file if the original exists
     clustered_hdf5_in = os.path.join(args.data_dir, "embeddings_clustered.h5")
     if os.path.exists(clustered_hdf5_in):
         clustered_hdf5_out = os.path.join(
-            args.data_dir, "embeddings_clustered_denoised.h5"
+            args.data_dir, f"embeddings_clustered_{output_suffix}.h5"
         )
         print(
-            f"\nWriting denoised clustered HDF5:\n"
+            f"\nWriting {output_suffix} clustered HDF5:\n"
             f"  input : {clustered_hdf5_in}\n"
             f"  output: {clustered_hdf5_out}"
         )
@@ -373,9 +380,9 @@ def main():
                     continue
                 fout.attrs[key] = val
 
-            # Update cluster-level metadata based on denoised labels
+            # Update cluster-level metadata based on final labels
             unique_clusters = sorted(
-                int(c) for c in np.unique(labels_denoised) if int(c) != -1
+                int(c) for c in np.unique(final_labels) if int(c) != -1
             )
             fout.attrs["n_clusters"] = len(unique_clusters)
             for cid in unique_clusters:
@@ -384,11 +391,11 @@ def main():
 
             # Sanity check: number of groups should match number of labels
             group_names = list(fin.keys())
-            if len(group_names) != labels_denoised.shape[0]:
+            if len(group_names) != final_labels.shape[0]:
                 raise ValueError(
                     "Number of samples in embeddings_clustered.h5 "
                     f"({len(group_names)}) does not match length of "
-                    f"cluster_labels_denoised ({labels_denoised.shape[0]})."
+                    f"final labels ({final_labels.shape[0]})."
                 )
 
             # Copy per-sample groups while updating cluster_id / cluster_label
@@ -411,8 +418,8 @@ def main():
                         continue
                     g_out.attrs[k] = v
 
-                # Set new cluster_id / cluster_label from denoised labels
-                new_cid = int(labels_denoised[idx])
+                # Set new cluster_id / cluster_label from final labels
+                new_cid = int(final_labels[idx])
                 g_out.attrs["cluster_id"] = new_cid
                 if new_cid == -1:
                     g_out.attrs["cluster_label"] = "noise"
@@ -421,16 +428,13 @@ def main():
                         new_cid, "unknown"
                     )
 
-        print(f"✓ Saved denoised clustered HDF5 to {clustered_hdf5_out}")
+        print(f"✓ Saved {output_suffix} clustered HDF5 to {clustered_hdf5_out}")
     else:
         print(
             f"\nNo embeddings_clustered.h5 found in {args.data_dir}; "
-            "skipping creation of embeddings_clustered_denoised.h5."
+            f"skipping creation of updated HDF5 file."
         )
 
 
 if __name__ == "__main__":
     main()
-
-
-
