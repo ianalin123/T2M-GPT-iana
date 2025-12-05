@@ -28,15 +28,15 @@ def decode_motion(zq, args, val_loader):
     pred_xyz = recover_from_ric(torch.from_numpy(pred_denorm).float().cuda(), args.nb_joints)  #Recover the motion from the original space
     return pred_xyz
 
-def save_results(zq, args, name, out_dir, val_loader):
+def save_linear_probe_results(zq, args, name, out_dir, val_loader):
     pose_xyz = decode_motion(zq, args, val_loader)
     np.save(os.path.join(out_dir, name+'_linear_probe.npy'), pose_xyz.detach().cpu().numpy())
     
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--zq_path', type=str, default='results/zq.npy')
-    parser.add_argument('--out_dir', type=str, default='results')
+    parser.add_argument('--zq_path', type=str, default='zq_vectors/zq.npy')
+    parser.add_argument('--out_dir', type=str, default='linear_probe_results')
     configs = parser.parse_args()
     
     args = option_vq.get_args_parser()
@@ -52,4 +52,4 @@ if __name__ == '__main__':
     
     name = args.zq_path.split('/')[-1].split('.')[0]
 
-    save_results(zq, args, name, args.out_dir, val_loader)
+    save_linear_probe_results(zq, args, name, args.out_dir, val_loader)
