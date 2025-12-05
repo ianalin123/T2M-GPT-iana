@@ -15,7 +15,7 @@ class QuantizeEMAReset(nn.Module):
         self.init = False
         self.code_sum = None
         self.code_count = None
-        self.register_buffer('codebook', torch.zeros(self.nb_code, self.code_dim).cuda())
+        self.register_buffer('codebook', torch.zeros(self.nb_code, self.code_dim))
 
     def _tile(self, x):
         nb_code_x, code_dim = x.shape
@@ -30,7 +30,7 @@ class QuantizeEMAReset(nn.Module):
 
     def init_codebook(self, x):
         out = self._tile(x)
-        self.codebook = out[:self.nb_code]
+        self.codebook.copy_(out[:self.nb_code])  # Use .copy_() instead of assignment
         self.code_sum = self.codebook.clone()
         self.code_count = torch.ones(self.nb_code, device=self.codebook.device)
         self.init = True
@@ -65,7 +65,7 @@ class QuantizeEMAReset(nn.Module):
         usage = (self.code_count.view(self.nb_code, 1) >= 1.0).float()
         code_update = self.code_sum.view(self.nb_code, self.code_dim) / self.code_count.view(self.nb_code, 1)
 
-        self.codebook = usage * code_update + (1 - usage) * code_rand
+        self.codebook.copy_(usage * code_update + (1 - usage) * code_rand)  # Use .copy_() instead of assignment
         prob = code_count / torch.sum(code_count)  
         perplexity = torch.exp(-torch.sum(prob * torch.log(prob + 1e-7)))
 
@@ -215,7 +215,7 @@ class QuantizeReset(nn.Module):
 
     def init_codebook(self, x):
         out = self._tile(x)
-        self.codebook = nn.Parameter(out[:self.nb_code])
+        self.codebook.data.copy_(out[:self.nb_code])  # Update parameter data in-place
         self.code_count = torch.ones(self.nb_code, device=self.codebook.device)
         self.init = True
         
@@ -310,7 +310,7 @@ class QuantizeEMA(nn.Module):
         self.init = False
         self.code_sum = None
         self.code_count = None
-        self.register_buffer('codebook', torch.zeros(self.nb_code, self.code_dim).cuda())
+        self.register_buffer('codebook', torch.zeros(self.nb_code, self.code_dim))
 
     def _tile(self, x):
         nb_code_x, code_dim = x.shape
@@ -325,7 +325,7 @@ class QuantizeEMA(nn.Module):
 
     def init_codebook(self, x):
         out = self._tile(x)
-        self.codebook = out[:self.nb_code]
+        self.codebook.copy_(out[:self.nb_code])  # Use .copy_() instead of assignment
         self.code_sum = self.codebook.clone()
         self.code_count = torch.ones(self.nb_code, device=self.codebook.device)
         self.init = True
@@ -356,7 +356,7 @@ class QuantizeEMA(nn.Module):
 
         code_update = self.code_sum.view(self.nb_code, self.code_dim) / self.code_count.view(self.nb_code, 1)
 
-        self.codebook = code_update
+        self.codebook.copy_(code_update)  # Use .copy_() instead of assignment
         prob = code_count / torch.sum(code_count)  
         perplexity = torch.exp(-torch.sum(prob * torch.log(prob + 1e-7)))
             

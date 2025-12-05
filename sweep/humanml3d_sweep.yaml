@@ -1,0 +1,88 @@
+program: /home/malulekevon/motion_latent_space/T2M-GPT-iana/train_vq.py
+method: bayes
+metric:
+  name: Val/TotalLoss
+  goal: minimize
+
+early_terminate:
+  type: hyperband
+  min_iter: 5
+  eta: 3
+  s: 2
+
+parameters:
+
+  batch_size:
+    values: [64, 128, 256, 512]
+  
+  
+  learning_rate:
+    distribution: log_uniform_values
+    min: 0.00005
+    max: 0.001
+
+
+  weight_decay:
+    values: [0.0005, 0.001, 0.005]
+
+  gamma:
+    distribution: log_uniform_values
+    min: 0.05
+    max: 0.5
+
+  depth:
+    values: [3, 4]  
+  
+  code_dim:
+    values: [128, 256, 512, 1024]  
+  
+  nb_code:
+    values: [128, 256, 512, 1024]  
+
+  width:
+    values: [128, 256, 512, 1024]  
+
+  
+  output_emb_width:
+    values: [128, 256, 512, 1024]  
+  
+  loss_vel:
+    distribution: uniform
+    min: 0.1
+    max: 1.0
+  
+  commit:
+    distribution: uniform
+    min: 0.1
+    max: 1.0
+  
+  vq_act: 
+    distribution: categorical
+    values: [relu, silu, gelu]
+  
+  quantizer:
+    value: ema_reset
+  
+  recons_loss: 
+    value: l1_smooth
+  
+  dataname:
+    value: 't2m'
+    
+  mu:
+    values: [0.95, 0.97, 0.99]
+
+  lr_scheduler:
+    value: [50000, 200000]
+
+cap_run: 100
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - --config
+  - config/humanml3d.yaml
+
+
+
