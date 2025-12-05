@@ -127,27 +127,11 @@ if __name__ == "__main__":
         print(f"Loaded {len(cluster_embeddings)} clusters", file=f)
         print(f"Available clusters: {cluster_labels}\n", file=f)
 
-
-        # ? ## Analogy relationship
-        triple_verbs = permutations(cluster_labels, r=3)
-
-        for A, B, C in triple_verbs:
-            result_vector, direction = compute_analogy(cluster_embeddings, A, B, C)
-            analogy_res, _ = find_nearest_cluster(
-                result_vector, cluster_embeddings, exclude=[A, B, C]
-            )
-
-            print(f"Direction ('{A}' -> '{B}'): {np.linalg.norm(direction):.4f}", file=f)
-            print(f"{A}:{B} :: {C}:{analogy_res}", file=f)
-            print("", file=f)
-
-
-        # ? ## Compute direction and transform
+        # Compute direction and transform
         triple_verbs = permutations(cluster_labels, r=3)
 
         for A, B, C in triple_verbs:
             direction = compute_cluster_direction(cluster_embeddings, A, B)
-            print(f"Direction ('{A}' -> '{B}'): {np.linalg.norm(direction):.4f}", file=f)
 
             transformee_centroid = get_cluster_centroid(cluster_embeddings, C)
             new_vector = transformee_centroid + direction
@@ -155,12 +139,14 @@ if __name__ == "__main__":
             analogy_res, dist = find_nearest_cluster(
                 new_vector, cluster_embeddings, exclude=[C]
             )
+
+            if "noise" in [A, B, C, analogy_res] or "step" in [A, B, C, analogy_res]:
+                continue
+
             print(f"'{C}' + ('{A}' -> '{B}') = '{analogy_res}'", file=f)
-            print(f"Distance: {dist:.4f}", file=f)
-            print("", file=f)
 
 
-        # ? ## Cosine similarity relationships
+        # Cosine similarity relationships
 
         print(f"{'':8}", end="", file=f)
         for c in cluster_labels:
