@@ -3,7 +3,8 @@ conda activate T2M-GPT
 dataset=t2m
 batch_size=256
 #Original model config
-CUDA_VISIBLE_DEVICES=4 python train_vq.py \
+
+CUDA_VISIBLE_DEVICES=3 python train_vq.py \
 --batch-size $batch_size \
 --lr 2e-4 \
 --total-iter 300000 \

@@ -41,10 +41,6 @@ parameters:
 
   width:
     values: [128, 256, 512, 1024]  
-
-  
-  output_emb_width:
-    values: [128, 256, 512, 1024]  
   
   loss_vel:
     distribution: uniform

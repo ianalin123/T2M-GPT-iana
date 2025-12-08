@@ -7,7 +7,7 @@ from scipy import linalg
 
 import visualization.plot_3d_global as plot_3d
 from utils.motion_process import recover_from_ric
-
+from tqdm import tqdm
 
 def tensorborad_add_video_xyz(writer, xyz, nb_iter, tag, nb_vis=4, title_batch=None, outname=None):
     xyz = xyz[:1]
@@ -18,10 +18,10 @@ def tensorborad_add_video_xyz(writer, xyz, nb_iter, tag, nb_vis=4, title_batch=N
     writer.add_video(tag, plot_xyz, nb_iter, fps = 20)
 
 @torch.no_grad()        
-def evaluation_vqvae(out_dir, val_loader, net, logger, writer, nb_iter, best_fid, best_iter, best_div, best_top1, best_top2, best_top3, best_matching, eval_wrapper, draw = True, save = True, savegif=False, savenpy=False) : 
+def evaluation_vqvae(out_dir, val_loader, net, logger, writer, nb_iter, best_fid, best_iter, best_div, best_top1, best_top2, best_top3, best_matching, eval_wrapper, draw = True, save = True, savegif=False, savenpy=False, exp_name='') : 
     net.eval()
     nb_sample = 0
-    
+
     draw_org = []
     draw_pred = []
     draw_text = []
@@ -36,7 +36,7 @@ def evaluation_vqvae(out_dir, val_loader, net, logger, writer, nb_iter, best_fid
     nb_sample = 0
     matching_score_real = 0
     matching_score_pred = 0
-    for batch in val_loader:
+    for batch in tqdm(val_loader, desc='Evaluating VQVAE', leave=False):
         word_embeddings, pos_one_hots, caption, sent_len, motion, m_length, token, name = batch
 
         motion = motion.cuda()
@@ -55,10 +55,10 @@ def evaluation_vqvae(out_dir, val_loader, net, logger, writer, nb_iter, best_fid
             pred_pose, loss_commit, perplexity = net(motion[i:i+1, :m_length[i]])
             pred_denorm = val_loader.dataset.inv_transform(pred_pose.detach().cpu().numpy())
             pred_xyz = recover_from_ric(torch.from_numpy(pred_denorm).float().cuda(), num_joints)
-            
             if savenpy:
-                np.save(os.path.join(out_dir, name[i]+'_gt.npy'), pose_xyz[:, :m_length[i]].cpu().numpy())
-                np.save(os.path.join(out_dir, name[i]+'_pred.npy'), pred_xyz.detach().cpu().numpy())
+                os.makedirs(os.path.join(out_dir, exp_name), exist_ok=True)
+                np.save(os.path.join(out_dir, exp_name, name[i]+'_gt.npy'), pose_xyz[:, :m_length[i]].cpu().numpy())
+                np.save(os.path.join(out_dir, exp_name, name[i]+'_pred.npy'), pred_xyz.detach().cpu().numpy())
 
             pred_pose_eval[i:i+1,:m_length[i],:] = pred_pose
 
