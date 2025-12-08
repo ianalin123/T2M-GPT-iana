@@ -46,7 +46,8 @@ def load_clustering_data(
 
     # Load embeddings
     emb_path = f"{data_dir}/{embeddings_file}"
-    embeddings = np.load(emb_path)
+    # Use allow_pickle=True to support embeddings saved with pickling
+    embeddings = np.load(emb_path, allow_pickle=True)
     print(f"Loaded embeddings: {embeddings.shape} from {emb_path}")
 
     # Aggregate over time dimension (mean pooling) only if 3D (N, T, D)
@@ -105,7 +106,7 @@ def train_supervised_classifier(X, y, classifier_type='random_forest'):
     elif classifier_type == 'gradient_boosting':
         clf = GradientBoostingClassifier(n_estimators=100, random_state=42)
     elif classifier_type == 'logistic':
-        clf = LogisticRegression(max_iter=1000, random_state=42, n_jobs=-1)
+        clf = LogisticRegression(max_iter=10000, random_state=42, n_jobs=-1)
     elif classifier_type == 'svm':
         clf = SVC(kernel='linear', random_state=42)
     else:
