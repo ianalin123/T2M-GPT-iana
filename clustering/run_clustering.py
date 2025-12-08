@@ -639,11 +639,34 @@ def label_clusters_by_majority_verb(labels, compound_verbs):
     unique_clusters = [c for c in np.unique(labels) if c != -1]
     for cluster_id in unique_clusters:
         atomic_counts = cluster_atomic_verb_counts[cluster_id]
-        if atomic_counts:
-            most_frequent_verb = atomic_counts.most_common(1)[0][0]
-            cluster_verb_labels[cluster_id] = most_frequent_verb
-        else:
+        if not atomic_counts:
             cluster_verb_labels[cluster_id] = "unknown"
+            continue
+
+        # 1) get top frequency
+        most_common = atomic_counts.most_common()
+        max_count = most_common[0][1]
+        tied_verbs = [v for v, c in most_common if c == max_count]
+
+        if len(tied_verbs) == 1:
+            # no tie
+            cluster_verb_labels[cluster_id] = tied_verbs[0]
+        else:
+            # 2) tie-break: prefer verb that appears most often as a pure compound label
+            comp_counts = cluster_compound_verb_counts[cluster_id]
+            best_verb = None
+            best_pure_count = -1
+            for v in tied_verbs:
+                pure_count = comp_counts.get(v, 0)  # counts of "v" as the whole compound_verb
+                if pure_count > best_pure_count:
+                    best_pure_count = pure_count
+                    best_verb = v
+
+            # 3) if still tied (all zero), fall back to deterministic choice
+            if best_verb is None:
+                best_verb = sorted(tied_verbs)[0]
+
+            cluster_verb_labels[cluster_id] = best_verb
 
     return cluster_verb_labels, cluster_atomic_verb_counts, cluster_compound_verb_counts
 
@@ -1232,5 +1255,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
