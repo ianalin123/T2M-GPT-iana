@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 from collections import Counter
+from joblib import dump
 
 
 def load_clustering_data(
@@ -331,6 +332,11 @@ def main():
         embeddings, verb_labels, 
         classifier_type=args.classifier
     )
+    
+    # Save trained classifier
+    classifier_save_path = f'{args.data_dir}/humanml_supervised_classifier_{args.classifier}.joblib'
+    dump(clf, classifier_save_path)
+    print(f"\n✓ Saved trained classifier to {classifier_save_path}")
     
     # Visualize confusion matrix
     visualize_confusion_matrix(y_test, y_pred, 
