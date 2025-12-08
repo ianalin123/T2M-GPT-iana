@@ -3,6 +3,14 @@ import json
 import sys
 import signal
 
+# Set GPU before any CUDA initialization
+# Priority: 1) Environment variable from sweep/shell, 2) Default to GPU 2 (or 6/7 if busy)
+if 'CUDA_VISIBLE_DEVICES' not in os.environ:
+    os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+    print(f"INFO: CUDA_VISIBLE_DEVICES not set, defaulting to GPU 2")
+else:
+    print(f"INFO: Using GPU(s): {os.environ['CUDA_VISIBLE_DEVICES']}")
+
 # Clean LD_LIBRARY_PATH to avoid conflicts
 if 'LD_LIBRARY_PATH' in os.environ:
     # Keep only essential CUDA paths
@@ -42,22 +50,34 @@ def update_lr_warm_up(optimizer, nb_iter, warm_up_iter, lr):
     return optimizer, current_lr
 
 ##### ---- Exp dirs ---- #####
-train_mode = False
+train_mode = True
 now = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 args = option_vq.get_args_parser()
 
-if args.config != 'None' and train_mode:
-  with open(args.config, 'r') as f:
-    config = yaml.load(f, Loader=yaml.FullLoader)
+# if args.config != 'None' and train_mode:
+with open(args.config, 'r') as f:
+  config = yaml.load(f, Loader=yaml.FullLoader)
 
-  for key, value in config.items():
-    if hasattr(args, key):
-      setattr(args, key, value)
+for key, value in config.items():
+  if hasattr(args, key):
+    setattr(args, key, value)
 
 torch.manual_seed(args.seed)
+    
+#Wandb logging
+wandb.init(project=f"T2M-GPT-VQ_VAE_{args.dataname}", 
+           config=args,
+           name=f"{args.exp_name}_{args.dataname}_{now}" if train_mode else f"VQVAE_{args.dataname}_{now}",
+           entity="malulekevon")
 
-args.out_dir = os.path.join(args.out_dir, f'{args.exp_name}_{args.dataname}_{now}')
+# Update args with wandb sweep parameters (if running a sweep)
+for key in wandb.config.keys():
+    if hasattr(args, key):
+        setattr(args, key, wandb.config[key])
+        
+args.out_dir = os.path.join(args.out_dir,args.dataname,f'{args.exp_name}_{args.dataname}_{now}')
+#update wandb config
 os.makedirs(args.out_dir, exist_ok = True)
 
 ##### ---- Logger ---- #####
@@ -142,7 +162,6 @@ logger.info('Moving model to CUDA...')
 start_time = time.time()
 net = net.cuda()
 net.train()
-logger.info(f'Model moved to CUDA in {time.time() - start_time:.2f} seconds')
 
 ##### ---- Optimizer & Scheduler ---- #####
 # Handle lr_scheduler being a single value or list (for W&B sweep compatibility)
@@ -157,19 +176,8 @@ scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_s
 
 Loss = losses.ReConsLoss(args.recons_loss, args.nb_joints)
 
-#Wandb logging
-wandb.init(project=f"T2M-GPT-VQ_VAE_{args.dataname}", 
-           config=args,
-           name=f"{args.exp_name}_{args.dataname}_{now}" if train_mode else f"VQVAE_{args.dataname}_{now}",
-           entity="malulekevon")
-
-# Update args with wandb sweep parameters (if running a sweep)
-for key in wandb.config.keys():
-    if hasattr(args, key):
-        setattr(args, key, wandb.config[key])
-
 ##### ------ warm-up ------- #####
-avg_recons, avg_perplexity, avg_commit = 0., 0., 0.
+avg_recons, avg_perplexity, avg_commit, avg_vel = 0., 0., 0., 0.
 
 train_loader_warmup = iter(train_loader)
 
@@ -198,18 +206,19 @@ for nb_iter in tqdm(range(1, args.warm_up_iter), desc="Warmup", leave=False):
     avg_recons += loss_motion.item()
     avg_perplexity += perplexity.item()
     avg_commit += loss_commit.item()
+    avg_vel += loss_vel.item()
     
     if nb_iter % args.print_iter == 0:
         avg_recons /= args.print_iter
         avg_perplexity /= args.print_iter
         avg_commit /= args.print_iter
+        avg_vel /= args.print_iter
+        logger.info(f"Warmup. Iter {nb_iter} :  lr {current_lr:.5f} \t Commit. {avg_commit:.5f} \t PPL. {avg_perplexity:.2f} \t Recons.  {avg_recons:.5f} \t Vel. {avg_vel:.5f}")
         
-        logger.info(f"Warmup. Iter {nb_iter} :  lr {current_lr:.5f} \t Commit. {avg_commit:.5f} \t PPL. {avg_perplexity:.2f} \t Recons.  {avg_recons:.5f}")
-        
-        avg_recons, avg_perplexity, avg_commit = 0., 0., 0.
+        avg_recons, avg_perplexity, avg_commit, avg_vel = 0., 0., 0., 0.
 
 ##### ---- Training ---- #####
-avg_recons, avg_perplexity, avg_commit, avg_total_loss = 0., 0., 0., 0.
+avg_recons, avg_perplexity, avg_commit, avg_vel, avg_total_loss = 0., 0., 0., 0., 0.
 # best_fid, best_iter, best_div, best_top1, best_top2, best_top3, best_matching, writer, logger = eval_trans.evaluation_vqvae(args.out_dir, val_loader, net, logger, writer, 0, best_fid=1000, best_iter=0, best_div=100, best_top1=0, best_top2=0, best_top3=0, best_matching=100, eval_wrapper=eval_wrapper)
 
 # Track best validation loss for checkpoint saving
@@ -246,6 +255,7 @@ with tqdm(total=args.total_iter, desc="Training Progress", unit="iter", leave=Fa
         avg_recons += loss_motion.item()
         avg_perplexity += perplexity.item()
         avg_commit += loss_commit.item()
+        avg_vel += loss_vel.item()
         avg_total_loss += loss.item()
         
         # Update progress bar
@@ -260,33 +270,37 @@ with tqdm(total=args.total_iter, desc="Training Progress", unit="iter", leave=Fa
             avg_perplexity /= args.print_iter
             avg_commit /= args.print_iter
             avg_total_loss /= args.print_iter
+            avg_vel /= args.print_iter
             
             # Save training metrics before resetting
             train_recons = avg_recons
             train_ppl = avg_perplexity
             train_commit = avg_commit
             train_total_loss = avg_total_loss
+            train_vel = avg_vel
             
             writer.add_scalar('./Train/L1', train_recons, nb_iter)
             writer.add_scalar('./Train/PPL', train_ppl, nb_iter)
             writer.add_scalar('./Train/Commit', train_commit, nb_iter)
             writer.add_scalar('./Train/TotalLoss', train_total_loss, nb_iter)
+            writer.add_scalar('./Train/Vel', train_vel, nb_iter)
             
-            logger.info(f"Train. Iter {nb_iter} : \t Total. {train_total_loss:.5f} \t Commit. {train_commit:.5f} \t PPL. {train_ppl:.2f} \t Recons.  {train_recons:.5f}")
+            logger.info(f"Train. Iter {nb_iter} : \t Total. {train_total_loss:.5f} \t Commit. {train_commit:.5f} \t PPL. {train_ppl:.2f} \t Recons.  {train_recons:.5f} \t Vel. {train_vel:.5f}")
             
             wandb.log({
                 "Train/Recons": train_recons,
                 "Train/PPL": train_ppl,
                 "Train/Commit": train_commit,
                 "Train/TotalLoss": train_total_loss,
+                "Train/Vel": train_vel,
                 "Train/Iter": nb_iter, 
             }, step=nb_iter)
             
-            avg_recons, avg_perplexity, avg_commit, avg_total_loss = 0., 0., 0., 0.
+            avg_recons, avg_perplexity, avg_commit, avg_total_loss, avg_vel = 0., 0., 0., 0., 0.
 
             net.eval()
             #Disable gradient computation and reduce memory
-            avg_recons_val, avg_perplexity_val, avg_commit_val, avg_total_loss_val = 0., 0., 0., 0.
+            avg_recons_val, avg_perplexity_val, avg_commit_val, avg_total_loss_val, avg_vel_val = 0., 0., 0., 0., 0.
 
             with torch.no_grad():
               for gt_motion_val in val_loader:
@@ -301,22 +315,26 @@ with tqdm(total=args.total_iter, desc="Training Progress", unit="iter", leave=Fa
                     avg_perplexity_val += perplexity_val.item()
                     avg_commit_val += loss_commit_val.item()
                     avg_total_loss_val += loss_val.item()
-
+                    avg_vel_val += loss_vel_val.item()
+                    
               avg_recons_val /= len(val_loader)
               avg_perplexity_val /= len(val_loader)
               avg_commit_val /= len(val_loader)
               avg_total_loss_val /= len(val_loader)
-
+              avg_vel_val /= len(val_loader)
+              
               writer.add_scalar('./Val/L1_Recon', avg_recons_val, nb_iter)
               writer.add_scalar('./Val/PPL', avg_perplexity_val, nb_iter)
               writer.add_scalar('./Val/Commit', avg_commit_val, nb_iter)
               writer.add_scalar('./Val/TotalLoss', avg_total_loss_val, nb_iter)
+              writer.add_scalar('./Val/Vel', avg_vel_val, nb_iter)
 
               wandb.log({
                   "Val/Recons": avg_recons_val,
                   "Val/PPL": avg_perplexity_val,
                   "Val/Commit": avg_commit_val,
                   "Val/TotalLoss": avg_total_loss_val,
+                  "Val/Vel": avg_vel_val,
                   "Val/Iter": nb_iter, 
               }, step=nb_iter)
 

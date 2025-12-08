@@ -119,6 +119,7 @@ class Text2MotionDataset(data.Dataset):
                     length_list.append(len(motion))
             except Exception as e:
                 # print(e)
+                import ipdb; ipdb.set_trace()
                 pass
 
         name_list, length_list = zip(*sorted(zip(new_name_list, length_list), key=lambda x: x[1]))
@@ -201,7 +202,7 @@ class Text2MotionDataset(data.Dataset):
 def DATALoader(dataset_name, is_test,
                 batch_size, w_vectorizer,
                 num_workers = 8, unit_length = 4) : 
-    
+
     val_loader = torch.utils.data.DataLoader(Text2MotionDataset(dataset_name, is_test, w_vectorizer, unit_length=unit_length),
                                               batch_size,
                                               shuffle = True,

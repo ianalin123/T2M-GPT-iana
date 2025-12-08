@@ -18,6 +18,7 @@ class VQVAE_251(nn.Module):
                  norm=None):
         
         super().__init__()
+        output_emb_width = code_dim
         self.code_dim = code_dim
         self.num_code = nb_code
         self.quant = args.quantizer

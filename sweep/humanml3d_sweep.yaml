@@ -43,8 +43,8 @@ parameters:
     values: [128, 256, 512, 1024]  
 
   
-  output_emb_width:
-    values: [128, 256, 512, 1024]  
+  # output_emb_width:
+  #   values: [128, 256, 512, 1024]  
   
   loss_vel:
     distribution: uniform
@@ -67,7 +67,7 @@ parameters:
     value: l1_smooth
   
   dataname:
-    value: 't2m'
+    value: t2m
     
   mu:
     values: [0.95, 0.97, 0.99]

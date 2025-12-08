@@ -14,6 +14,8 @@ from models.evaluator_wrapper import EvaluatorModelWrapper
 import warnings
 warnings.filterwarnings('ignore')
 import numpy as np
+from tqdm import tqdm
+
 ##### ---- Exp dirs ---- #####
 args = option_vq.get_args_parser()
 torch.manual_seed(args.seed)
@@ -69,8 +71,9 @@ top2 = []
 top3 = []
 matching = []
 repeat_time = 20
-for i in range(repeat_time):
-    best_fid, best_iter, best_div, best_top1, best_top2, best_top3, best_matching, writer, logger = eval_trans.evaluation_vqvae(args.out_dir, val_loader, net, logger, writer, 0, best_fid=1000, best_iter=0, best_div=100, best_top1=0, best_top2=0, best_top3=0, best_matching=100, eval_wrapper=eval_wrapper, draw=False, save=False, savenpy=(i==0))
+for i in tqdm(range(repeat_time), desc='Evaluating VQVAE', leave=False):
+
+    best_fid, best_iter, best_div, best_top1, best_top2, best_top3, best_matching, writer, logger = eval_trans.evaluation_vqvae(args.out_dir, val_loader, net, logger, writer, 0, best_fid=1000, best_iter=0, best_div=100, best_top1=0, best_top2=0, best_top3=0, best_matching=100, eval_wrapper=eval_wrapper, draw=False, save=False, savenpy=(i==0), exp_name=f'{args.dataname}/{args.exp_name}')
     fid.append(best_fid)
     div.append(best_div)
     top1.append(best_top1)
@@ -93,3 +96,41 @@ top3 = np.array(top3)
 matching = np.array(matching)
 msg_final = f"FID. {np.mean(fid):.3f}, conf. {np.std(fid)*1.96/np.sqrt(repeat_time):.3f}, Diversity. {np.mean(div):.3f}, conf. {np.std(div)*1.96/np.sqrt(repeat_time):.3f}, TOP1. {np.mean(top1):.3f}, conf. {np.std(top1)*1.96/np.sqrt(repeat_time):.3f}, TOP2. {np.mean(top2):.3f}, conf. {np.std(top2)*1.96/np.sqrt(repeat_time):.3f}, TOP3. {np.mean(top3):.3f}, conf. {np.std(top3)*1.96/np.sqrt(repeat_time):.3f}, Matching. {np.mean(matching):.3f}, conf. {np.std(matching)*1.96/np.sqrt(repeat_time):.3f}"
 logger.info(msg_final)
+
+# Save results in LaTeX table format
+latex_table = f"""\\begin{{table}}[h]
+\\centering
+\\begin{{tabular}}{{l ccc ccc}}
+\\toprule
+\\multirow{{2}}{{*}}{{\\textbf{{Methods}}}} & \\multicolumn{{3}}{{c}}{{\\textbf{{R-Precision $\\uparrow$}}}} & \\multirow{{2}}{{*}}{{\\textbf{{FID $\\downarrow$}}}} & \\multirow{{2}}{{*}}{{\\textbf{{MM-Dist $\\downarrow$}}}} & \\multirow{{2}}{{*}}{{\\textbf{{Diversity $\\uparrow$}}}} \\\\
+\\cmidrule(lr){{2-4}}
+& Top-1 & Top-2 & Top-3 & & & \\\\
+\\midrule
+{args.exp_name} & {np.mean(top1):.3f}$\\pm${np.std(top1)*1.96/np.sqrt(repeat_time):.3f} & {np.mean(top2):.3f}$\\pm${np.std(top2)*1.96/np.sqrt(repeat_time):.3f} & {np.mean(top3):.3f}$\\pm${np.std(top3)*1.96/np.sqrt(repeat_time):.3f} & {np.mean(fid):.3f}$\\pm${np.std(fid)*1.96/np.sqrt(repeat_time):.3f} & {np.mean(matching):.3f}$\\pm${np.std(matching)*1.96/np.sqrt(repeat_time):.3f} & {np.mean(div):.3f}$\\pm${np.std(div)*1.96/np.sqrt(repeat_time):.3f} \\\\
+\\bottomrule
+\\end{{tabular}}
+\\caption{{Evaluation results for {args.exp_name}}}
+\\label{{tab:results_{args.exp_name}}}
+\\end{{table}}
+"""
+import os
+os.makedirs(f'output_eval/{args.dataname}', exist_ok=True)
+
+latex_file_path = os.path.join(f'output_eval/{args.dataname}', f'{args.exp_name}_results_table.tex')
+with open(latex_file_path, 'w') as f:
+    f.write(latex_table)
+logger.info(f"LaTeX table saved to {latex_file_path}")
+
+#save the result to a json file
+result = {
+    'fid': float(np.mean(fid)),
+    'div': float(np.mean(div)),
+    'top1': float(np.mean(top1)),
+    'top2': float(np.mean(top2)),
+    'top3': float(np.mean(top3)),
+    'matching': float(np.mean(matching)),
+    'msg_final': msg_final
+}
+with open(os.path.join(f'output_eval/{args.dataname}', f'{args.exp_name}_result.json'), 'w') as f:
+    json.dump(result,
+              f, indent=4)

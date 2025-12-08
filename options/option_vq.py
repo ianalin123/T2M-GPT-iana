@@ -6,7 +6,7 @@ def get_args_parser():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     ## dataloader  
-    parser.add_argument('--dataname', type=str, default='kit', help='dataset directory')
+    parser.add_argument('--dataname', type=str, default='t2m', help='dataset directory')
     parser.add_argument('--batch-size', default=128, type=int, help='batch size')
     parser.add_argument('--window-size', type=int, default=64, help='training motion length')
 
@@ -45,7 +45,7 @@ def get_args_parser():
     
     
     ## output directory 
-    parser.add_argument('--out-dir', type=str, default='output_vqfinal/', help='output directory')
+    parser.add_argument('--out-dir', type=str, default='/scratch/current/malulekevon/motion_latent_space/output_vq/', help='output directory')
     parser.add_argument('--results-dir', type=str, default='visual_results/', help='output directory')
     parser.add_argument('--visual-name', type=str, default='baseline', help='output directory')
     parser.add_argument('--exp-name', type=str, default='VQVAE', help='name of the experiment, will create a file inside out-dir')
@@ -53,10 +53,11 @@ def get_args_parser():
     parser.add_argument('--print-iter', default=200, type=int, help='print frequency')
     parser.add_argument('--eval-iter', default=1000, type=int, help='evaluation frequency')
     parser.add_argument('--seed', default=123, type=int, help='seed for initializing training.')
+    parser.add_argument('--gpu-id', default=None, type=int, help='GPU ID to use (overrides CUDA_VISIBLE_DEVICES)')
     
     parser.add_argument('--vis-gt', action='store_true', help='whether visualize GT motions')
     parser.add_argument('--nb-vis', default=20, type=int, help='nb of visualizations')
-    parser.add_argument('--config', type=str, default='None', help='config file for the experiment')
+    parser.add_argument('--config', type=str, default='./config/kit.yaml', help='config file for the experiment')
     
     
     return parser.parse_args()
