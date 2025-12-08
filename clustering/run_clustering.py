@@ -8,6 +8,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.mixture import GaussianMixture
+from sklearn.metrics import silhouette_score
 from tqdm import tqdm
 import seaborn as sns
 
@@ -291,6 +292,78 @@ def cluster_embeddings(embeddings, n_clusters=20, aggregate="mean", dim_reductio
             print(f"  Cluster {label:2d}: {count:5d} samples ({count/len(labels)*100:5.1f}%)")
 
     return labels, model, embeddings_agg, reducer
+
+
+def compute_and_save_silhouette(embeddings, labels, algorithm, save_dir):
+    """
+    Compute and save the silhouette score for the final clustering result.
+
+    For HDBSCAN, noise points (label == -1) are excluded.
+    The score is saved to 'cluster_metrics.txt' in save_dir.
+    """
+    print("\n" + "=" * 80)
+    print("Computing silhouette score for clustered data...")
+    print("=" * 80)
+
+    # Handle noise points for HDBSCAN
+    if algorithm == "hdbscan":
+        mask = labels != -1
+        if not np.any(mask):
+            print("Silhouette score skipped: all points are labeled as noise (-1) by HDBSCAN.")
+            return None
+        embeddings_eval = embeddings[mask]
+        labels_eval = labels[mask]
+        print(f"  Excluding {np.sum(~mask)} noise points; using {len(labels_eval)} points.")
+    else:
+        embeddings_eval = embeddings
+        labels_eval = labels
+
+    unique_labels, counts = np.unique(labels_eval, return_counts=True)
+
+    # Need at least 2 clusters
+    if len(unique_labels) < 2:
+        print("Silhouette score skipped: need at least 2 clusters.")
+        return None
+
+    # Each cluster must have at least 2 samples
+    if np.any(counts < 2):
+        print("Silhouette score skipped: at least one cluster has fewer than 2 samples.")
+        return None
+
+    n_samples = len(embeddings_eval)
+    sample_size = min(10000, n_samples)
+
+    print(f"  Number of clusters (excluding noise): {len(unique_labels)}")
+    print(f"  Number of samples available: {n_samples}")
+    if sample_size < n_samples:
+        print(f"  Using a random subsample of {sample_size} points for silhouette computation.")
+
+    try:
+        score = silhouette_score(
+            embeddings_eval,
+            labels_eval,
+            sample_size=sample_size if sample_size < n_samples else None,
+            random_state=42,
+        )
+    except Exception as e:
+        print(f"Silhouette score computation failed: {e}")
+        return None
+
+    print(f"\nSilhouette score ({algorithm}) = {score:.4f}")
+
+    # Save to metrics file
+    metrics_path = os.path.join(save_dir, "cluster_metrics.txt")
+    with open(metrics_path, "w") as f:
+        f.write("Clustering Metrics\n")
+        f.write("==================\n")
+        f.write(f"Algorithm: {algorithm}\n")
+        f.write(f"Num clusters (excluding noise): {len(unique_labels)}\n")
+        f.write(f"Num samples (total): {n_samples}\n")
+        f.write(f"Num samples used for silhouette: {sample_size if sample_size < n_samples else n_samples}\n")
+        f.write(f"Silhouette score: {score:.6f}\n")
+
+    print(f"Saved silhouette score and clustering metrics to {metrics_path}")
+    return score
 
 
 def visualize_clusters(
@@ -1164,6 +1237,14 @@ def main():
         lengths=lengths,
     )
 
+    # Compute silhouette score for the final clustering (where applicable)
+    silhouette_value = compute_and_save_silhouette(
+        embeddings_processed,
+        labels,
+        args.clustering_algorithm,
+        args.save_dir,
+    )
+
     # Save clustering results
     np.save(os.path.join(args.save_dir, "cluster_labels.npy"), labels)
     np.save(
@@ -1251,6 +1332,8 @@ def main():
     print(f"  - cluster_analysis.txt: detailed cluster analysis ({algo_name.upper()}, atomic + compound verb distributions)")
     if args.hdf5_file:
         print("  - embeddings_clustered.h5: HDF5 file with cluster assignments and atomic verb labels")
+    if silhouette_value is not None:
+        print("  - cluster_metrics.txt: overall clustering metrics (including silhouette score)")
 
 
 if __name__ == "__main__":

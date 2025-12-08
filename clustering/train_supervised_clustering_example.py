@@ -59,7 +59,8 @@ def load_clustering_data(
 
     # Load primary labels (verb- or cluster-based)
     labels_path = f"{data_dir}/{labels_file}"
-    verb_labels = np.load(labels_path)
+    # Use allow_pickle=True to support object arrays (e.g., merged/semantic label files)
+    verb_labels = np.load(labels_path, allow_pickle=True)
     print(f"Loaded labels from {labels_path}: {verb_labels.shape}")
     print(f"Number of unique labels: {len(np.unique(verb_labels))}")
 
@@ -106,7 +107,7 @@ def train_supervised_classifier(X, y, classifier_type='random_forest'):
     elif classifier_type == 'logistic':
         clf = LogisticRegression(max_iter=1000, random_state=42, n_jobs=-1)
     elif classifier_type == 'svm':
-        clf = SVC(kernel='rbf', random_state=42)
+        clf = SVC(kernel='linear', random_state=42)
     else:
         raise ValueError(f"Unknown classifier: {classifier_type}")
     
