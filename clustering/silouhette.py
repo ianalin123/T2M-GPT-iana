@@ -13,12 +13,13 @@ Compute silhouette score for FINAL semantic clusters (Option A).
 - Writes results to:        <data_dir>/semantic_cluster_metrics.txt
 
 Run e.g.:
-    python clustering/compute_semantic_silhouette.py \
+    python clustering/silouhette.py \
         --data-dir clustering/outputs_continuous --algorithm hdbscan
 """
 
 import argparse
 import os
+from typing import Tuple, Optional
 
 import numpy as np
 from sklearn.metrics import silhouette_score
@@ -73,7 +74,7 @@ def load_embeddings(data_dir: str) -> np.ndarray:
     return embeddings
 
 
-def load_final_labels(data_dir: str) -> tuple[np.ndarray, str]:
+def load_final_labels(data_dir: str) -> Tuple[np.ndarray, str]:
     """
     Try, in order:
         cluster_labels_denoised.npy
@@ -99,13 +100,12 @@ def load_final_labels(data_dir: str) -> tuple[np.ndarray, str]:
         f"{', '.join(candidates)}"
     )
 
-
 def compute_semantic_silhouette(
     embeddings: np.ndarray,
     labels: np.ndarray,
     algorithm: str,
     save_path: str,
-) -> float | None:
+) -> Optional[float]:
     """
     Compute silhouette score using FINAL semantic labels.
 
