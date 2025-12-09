@@ -101,14 +101,10 @@ def train_supervised_classifier(X, y, classifier_type='random_forest'):
     print(f"Test set: {len(X_test)} samples")
     
     # Choose classifier
-    if classifier_type == 'random_forest':
-        clf = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
-    elif classifier_type == 'gradient_boosting':
-        clf = GradientBoostingClassifier(n_estimators=100, random_state=42)
-    elif classifier_type == 'logistic':
+    if classifier_type == 'logistic':
         clf = LogisticRegression(max_iter=10000, random_state=42, n_jobs=-1)
     elif classifier_type == 'svm':
-        clf = SVC(kernel='linear', random_state=42)
+        clf = SVC(kernel='linear', random_state=42, C=1.0)
     else:
         raise ValueError(f"Unknown classifier: {classifier_type}")
     
